@@ -20,10 +20,8 @@ for _parent in Path(__file__).resolve().parents:
     if (_parent / "shdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
-
-
-PAPER_ROOT = ROOT / "CMFC_DETR_unpacked"
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD, PAPER  # noqa: E402
+PAPER_ROOT = PAPER
 
 SCORE_THRESHOLD = 0.50
 MATCH_IOU = 0.50
@@ -99,8 +97,8 @@ class CandidateMetrics:
     image_id: int
     file_name: str
     gt_count: int
-    cmfc_tp: int
-    cmfc_fp: int
+    shdetr_tp: int
+    shdetr_fp: int
     unique_targets: tuple[int, ...]
     visible_unique: int
     visible_size_sum: float
@@ -112,8 +110,8 @@ class CandidateMetrics:
             float(self.visible_unique),
             float(len(self.unique_targets)),
             self.visible_size_sum,
-            float(self.cmfc_tp),
-            float(-self.cmfc_fp),
+            float(self.shdetr_tp),
+            float(-self.shdetr_fp),
             float(self.other_fp),
         )
 
@@ -133,7 +131,7 @@ VEDAI = DatasetConfig(
         "RSVDet",
         "YOLOv11-RGBT",
         "LCAFNet",
-        "CMFC-DETR",
+        "SH-DETR",
     ),
     json_sources={
         "CFT": JsonSource(
@@ -155,7 +153,7 @@ VEDAI = DatasetConfig(
         "RT-DETR concat": JsonSource(
             ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json"
         ),
-        "CMFC-DETR": JsonSource(
+        "SH-DETR": JsonSource(
             ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json"
         ),
     },
@@ -194,7 +192,7 @@ M3FD = DatasetConfig(
         "YOLOv11-RGBT",
         "LCAFNet",
         "CLDyN+RT-DETR",
-        "CMFC-DETR",
+        "SH-DETR",
     ),
     json_sources={
         "RT-DETR RGB": JsonSource(
@@ -212,7 +210,7 @@ M3FD = DatasetConfig(
             / "compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/"
             "cldyn-vfn-rtdetr-1/val_best_test_per_class/predictions.json"
         ),
-        "CMFC-DETR": JsonSource(
+        "SH-DETR": JsonSource(
             ROOT
             / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/"
             "v19c_spsf/predictions.json"
@@ -523,15 +521,15 @@ def candidate_metrics(
         name: match_detections(methods.get(name, {}).get(image_id, []), ground_truth)
         for name in method_order
     }
-    cmfc_match = matches["CMFC-DETR"]
+    shdetr_match = matches["SH-DETR"]
     other_targets = {
         target_index
         for name in method_order
-        if name != "CMFC-DETR"
+        if name != "SH-DETR"
         for target_index in matches[name].values()
     }
     unique_targets = tuple(
-        sorted(set(cmfc_match.values()).difference(other_targets))
+        sorted(set(shdetr_match.values()).difference(other_targets))
     )
     display_scale = PANEL_WIDTH / record.width
     display_sizes = [
@@ -541,18 +539,18 @@ def candidate_metrics(
         )
         for index in unique_targets
     ]
-    cmfc_count = len(methods.get("CMFC-DETR", {}).get(image_id, []))
+    shdetr_count = len(methods.get("SH-DETR", {}).get(image_id, []))
     other_fp = sum(
         len(methods.get(name, {}).get(image_id, [])) - len(matches[name])
         for name in method_order
-        if name != "CMFC-DETR"
+        if name != "SH-DETR"
     )
     return CandidateMetrics(
         image_id=image_id,
         file_name=record.file_name,
         gt_count=len(ground_truth),
-        cmfc_tp=len(cmfc_match),
-        cmfc_fp=cmfc_count - len(cmfc_match),
+        shdetr_tp=len(shdetr_match),
+        shdetr_fp=shdetr_count - len(shdetr_match),
         unique_targets=unique_targets,
         visible_unique=sum(size >= VISIBLE_UNIQUE_MIN_SIDE for size in display_sizes),
         visible_size_sum=sum(display_sizes),
@@ -589,7 +587,7 @@ def print_ranking(name: str, candidates: Sequence[CandidateMetrics], limit: int 
     for index, item in enumerate(candidates[:limit], start=1):
         print(
             f"  {index:02d} id={item.image_id} file={item.file_name} "
-            f"gt={item.gt_count} cmfc_tp={item.cmfc_tp} cmfc_fp={item.cmfc_fp} "
+            f"gt={item.gt_count} shdetr_tp={item.shdetr_tp} shdetr_fp={item.shdetr_fp} "
             f"unique={len(item.unique_targets)} visible_unique={item.visible_unique} "
             f"other_fp={item.other_fp}"
         )
@@ -664,7 +662,7 @@ def select_vedai(
     if forced_image_id is not None:
         return forced_image_id, final
     if not final:
-        raise RuntimeError("No VEDAI sample retained a CMFC-only true positive")
+        raise RuntimeError("No VEDAI sample retained a SH-DETR-only true positive")
     return final[0].image_id, final
 
 
@@ -679,7 +677,7 @@ def select_m3fd(
     if forced_image_id is not None:
         return forced_image_id, ranked
     if not ranked:
-        raise RuntimeError("No M3FD sample has a CMFC-only true positive")
+        raise RuntimeError("No M3FD sample has a SH-DETR-only true positive")
     return ranked[0].image_id, ranked
 
 
@@ -713,12 +711,12 @@ def detection_color(
     method: str,
     detection_index: int,
     matches: Mapping[str, Mapping[int, int]],
-    cmfc_unique_targets: set[int],
+    shdetr_unique_targets: set[int],
 ) -> tuple[int, int, int]:
     target_index = matches[method].get(detection_index)
     if target_index is None:
         return CYAN
-    if method == "CMFC-DETR" and target_index in cmfc_unique_targets:
+    if method == "SH-DETR" and target_index in shdetr_unique_targets:
         return YELLOW
     return RED
 
@@ -786,7 +784,7 @@ def draw_legend(
     canvas: Image.Image, top: int, font: ImageFont.ImageFont
 ) -> None:
     draw = ImageDraw.Draw(canvas)
-    entries = ((RED, "Correct detection"), (CYAN, "False positive"), (YELLOW, "CMFC-only true positive"))
+    entries = ((RED, "Correct detection"), (CYAN, "False positive"), (YELLOW, "SH-DETR-only true positive"))
     swatch = 18
     gap = 32
     widths = []
@@ -838,10 +836,10 @@ def render(
     other_targets = {
         target_index
         for name in config.method_order
-        if name != "CMFC-DETR"
+        if name != "SH-DETR"
         for target_index in matches[name].values()
     }
-    cmfc_unique_targets = set(matches["CMFC-DETR"].values()).difference(other_targets)
+    shdetr_unique_targets = set(matches["SH-DETR"].values()).difference(other_targets)
 
     panel_height = round(PANEL_WIDTH * record.height / record.width)
     canvas_width = 2 * CANVAS_MARGIN + 4 * PANEL_WIDTH + 3 * COLUMN_GAP
@@ -872,7 +870,7 @@ def render(
             range(len(methods[name])),
             key=lambda detection_index: color_priority[
                 detection_color(
-                    name, detection_index, matches, cmfc_unique_targets
+                    name, detection_index, matches, shdetr_unique_targets
                 )
             ],
         )
@@ -890,7 +888,7 @@ def render(
             draw.rectangle(
                 display_box,
                 outline=detection_color(
-                    name, detection_index, matches, cmfc_unique_targets
+                    name, detection_index, matches, shdetr_unique_targets
                 ),
                 width=BOX_WIDTH,
             )
@@ -920,13 +918,13 @@ def render(
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, format="PNG", optimize=True)
 
-    cmfc_matches = matches["CMFC-DETR"]
+    shdetr_matches = matches["SH-DETR"]
     print(f"wrote={output}")
     print(
         f"selection={config.name} id={image_id} file={record.file_name} "
         f"size={record.width}x{record.height} gt={len(ground_truth)} "
-        f"cmfc_tp={len(cmfc_matches)} cmfc_fp={len(methods['CMFC-DETR']) - len(cmfc_matches)} "
-        f"cmfc_unique={len(cmfc_unique_targets)}"
+        f"shdetr_tp={len(shdetr_matches)} shdetr_fp={len(methods['SH-DETR']) - len(shdetr_matches)} "
+        f"shdetr_unique={len(shdetr_unique_targets)}"
     )
     print("order=" + " | ".join(config.method_order))
     print(
@@ -936,7 +934,7 @@ def render(
             for name in config.method_order
         )
     )
-    for target_index in sorted(cmfc_unique_targets):
+    for target_index in sorted(shdetr_unique_targets):
         target = ground_truth[target_index]
         box = tuple(round(value, 1) for value in target.xyxy)
         print(

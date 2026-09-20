@@ -240,7 +240,7 @@ def box_iou(left, right) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def cmfc_color(detection, ground_truth, other_methods):
+def shdetr_color(detection, ground_truth, other_methods):
     matching_gt = [
         target for target in ground_truth
         if target.category_id == detection.category_id and box_iou(target.xyxy, detection.xyxy) >= MATCH_IOU
@@ -328,8 +328,8 @@ def main() -> None:
     font_title = load_font(24 * SCALE)
     font_label = load_font(20 * SCALE)
 
-    def color_for_cmfc(detection: Detection):
-        return cmfc_color(detection, ground_truth, other_methods)
+    def color_for_shdetr(detection: Detection):
+        return shdetr_color(detection, ground_truth, other_methods)
 
     def color_red(_: Detection):
         return RED
@@ -338,7 +338,7 @@ def main() -> None:
         row, column = divmod(index, 4)
         panel_left = CANVAS_MARGIN + column * (MODALITY_SIZE + COLUMN_GAP)
         image_top = CANVAS_MARGIN + row * (panel_height + ROW_GAP)
-        color_for = color_for_cmfc if name == "SH-DETR" else color_red
+        color_for = color_for_shdetr if name == "SH-DETR" else color_red
 
         for offset, src in (
             (TITLE_BAND, source),
@@ -386,8 +386,8 @@ def main() -> None:
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
     print(f"gt={len(ground_truth)}")
-    yellow = [d for d in methods["SH-DETR"] if color_for_cmfc(d) == YELLOW]
-    print(f"cmfc_unique(yellow)={len(yellow)}")
+    yellow = [d for d in methods["SH-DETR"] if color_for_shdetr(d) == YELLOW]
+    print(f"shdetr_unique(yellow)={len(yellow)}")
 
 
 if __name__ == "__main__":

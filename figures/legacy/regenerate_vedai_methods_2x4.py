@@ -19,10 +19,8 @@ for _parent in Path(__file__).resolve().parents:
     if (_parent / "shdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
-
-
-PAPER_ROOT = ROOT / "CMFC_DETR_unpacked"
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, PAPER  # noqa: E402
+PAPER_ROOT = PAPER
 IMAGE_ID = 25
 IMAGE_KEY = "00000025_co"
 IMAGE_PATH = DATASETS / "VEDAI/Vehicules1024/00000025_co.png"
@@ -37,7 +35,7 @@ METHOD_ORDER = (
     "RSVDet",
     "YOLOv11-RGBT",
     "LCAFNet",
-    "CMFC-DETR",
+    "SH-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -91,7 +89,7 @@ JSON_SOURCES = {
         ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json",
         0,
     ),
-    "CMFC-DETR": (
+    "SH-DETR": (
         ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json",
         0,
     ),
@@ -282,7 +280,7 @@ def box_iou(left: Sequence[float], right: Sequence[float]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def cmfc_color(
+def shdetr_color(
     detection: Detection,
     ground_truth: Iterable[Detection],
     other_methods: Iterable[Detection],
@@ -351,8 +349,8 @@ def draw_panel(
             min(PANEL_SIZE - 1, max(0, round(y2 * scale_y))),
         )
         color = (
-            cmfc_color(detection, ground_truth, other_methods)
-            if title == "CMFC-DETR"
+            shdetr_color(detection, ground_truth, other_methods)
+            if title == "SH-DETR"
             else RED
         )
         draw.rectangle(display_box, outline=color, width=BOX_WIDTH)
@@ -416,14 +414,14 @@ def main() -> None:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(args.output, format="PNG", optimize=True)
     yellow_count = sum(
-        cmfc_color(detection, ground_truth, other_methods) == YELLOW
-        for detection in methods["CMFC-DETR"]
+        shdetr_color(detection, ground_truth, other_methods) == YELLOW
+        for detection in methods["SH-DETR"]
     )
     print(f"wrote={args.output}")
     print(f"image={IMAGE_KEY} size={source.width}x{source.height}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    print(f"cmfc_yellow={yellow_count} cmfc_red={len(methods['CMFC-DETR']) - yellow_count}")
+    print(f"shdetr_yellow={yellow_count} shdetr_red={len(methods['SH-DETR']) - yellow_count}")
 
 
 if __name__ == "__main__":

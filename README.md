@@ -118,7 +118,7 @@ falls back to defaults derived from the current user's home directory:
 | `SHDETR_CFT` | CFT comparison checkout | `$SHDETR_WORKSPACE/CFT` |
 | `SHDETR_LCAFNET` | LCAFNet comparison checkout | `$SHDETR_WORKSPACE/LCAFNet` |
 | `SHDETR_MSOD` | Multispectral-object-detection checkout | `$SHDETR_WORKSPACE/multispectral-object-detection` |
-| `SHDETR_PAPER` | Unpacked paper sources (figure target) | `$SHDETR_ROOT/CMFC_DETR_unpacked` |
+| `SHDETR_PAPER` | Unpacked paper sources (figure target) | `$SHDETR_ROOT/SH_DETR` |
 | `SHDETR_OUT_QUAL` | Qualitative-figure output root | `$SHDETR_ROOT/out_qual` |
 
 Print the resolved values before running anything, and export the ones your

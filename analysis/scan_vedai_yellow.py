@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Scan the full VEDAI fold01 test set (121 scenes) under the CURRENT prediction
 files of 7 methods (CFT, C2DFF-Net, RT-DETR RGB, RT-DETR concat, YOLOv11-RGBT,
-LCAFNet, CMFC-DETR) and report every scene where CMFC-DETR still owns a
-CMFC-only true positive (the yellow box condition).
+LCAFNet, SH-DETR) and report every scene where SH-DETR still owns a
+SH-DETR-only true positive (the yellow box condition).
 
 RSVDet is deliberately excluded here: adding a method can only shrink the
 unique set, never grow it. Scenes that survive this scan are then re-checked
@@ -36,7 +36,7 @@ JSON_SOURCES = {
     "C2DFF-Net": (ROOT / "compare/C2DFF_VEDAI/runs/c2dff_s3407_uuid2_valbest_test_20260802/predictions.json", 1),
     "RT-DETR RGB": (ROOT / "outputs/vedai_direct_test_unified/rgb/seed_3407/predictions.json", 0),
     "RT-DETR concat": (ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json", 0),
-    "CMFC-DETR": (ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json", 0),
+    "SH-DETR": (ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json", 0),
 }
 YOLO_SOURCES = {
     "YOLOv11-RGBT": ROOT / "compare/YOLOv11_RGBT/runs/yolov11_rgbt_vedai_s3407_uuid2_valbest_test_20260802/labels",
@@ -150,7 +150,7 @@ def main():
 
     tp_total = {n: 0 for n in METHOD_ORDER}
     det_scenes = {n: 0 for n in METHOD_ORDER}
-    cmfc_tp_scenes = 0
+    shdetr_tp_scenes = 0
     rows = []
     for img_id, gts in sorted(gt_by_img.items()):
         ms = {name: match(methods[name].get(img_id, []), gts) for name in METHOD_ORDER}
@@ -158,11 +158,11 @@ def main():
             tp_total[n] += len(ms[n])
             if methods[n].get(img_id):
                 det_scenes[n] += 1
-        other = {t for name in METHOD_ORDER if name != "CMFC-DETR" for t in ms[name]}
-        cmfc = ms["CMFC-DETR"]
-        unique = sorted(set(cmfc).difference(other))
-        if cmfc:
-            cmfc_tp_scenes += 1
+        other = {t for name in METHOD_ORDER if name != "SH-DETR" for t in ms[name]}
+        shdetr = ms["SH-DETR"]
+        unique = sorted(set(shdetr).difference(other))
+        if shdetr:
+            shdetr_tp_scenes += 1
         if not unique:
             continue
         unique_cats = [CLASS8.get(gts[t]["cat"], str(gts[t]["cat"])) for t in unique]
@@ -172,9 +172,9 @@ def main():
 
     print(f"\nper-method total TP over fold01 test: {tp_total}")
     print(f"scenes with >=1 det per method: {det_scenes}")
-    print(f"scenes where CMFC has >=1 TP: {cmfc_tp_scenes}")
+    print(f"scenes where SH-DETR has >=1 TP: {shdetr_tp_scenes}")
     rows.sort(key=lambda r: (-r[2], -r[1]))
-    print(f"\n=== scenes with CMFC-only unique TP (no RSVDet yet): {len(rows)} ===")
+    print(f"\n=== scenes with SH-DETR-only unique TP (no RSVDet yet): {len(rows)} ===")
     for img_id, ng, nu, ucats, gcats, counts in rows:
         print(f"id={img_id:>6} file={img_id:08d}_co  gt={ng} unique={nu} unique_cats={ucats} gt_cats={gcats}")
         print(f"       counts={counts}")

@@ -6,8 +6,8 @@ Changes vs the earlier version (addresses reviewer comments):
     of the same scene, so the multimodal input is explicit;
   * text is set in Nimbus Roman (Times-metric compatible) instead of DejaVu;
   * panels are scaled down so the whole figure reads more compactly;
-  * an arrow on the CMFC-DETR panel highlights a tail-class (camping car)
-    target for which CMFC-DETR outputs markedly higher confidence than the
+  * an arrow on the SH-DETR panel highlights a tail-class (camping car)
+    target for which SH-DETR outputs markedly higher confidence than the
     RT-DETR concat baseline (0.65 vs 0.34).
 """
 
@@ -29,15 +29,13 @@ for _parent in Path(__file__).resolve().parents:
     if (_parent / "shdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
-
-
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, PAPER  # noqa: E402
 IMAGE_ID = 25
 IMAGE_KEY = "00000025_co"
 IMAGE_PATH = DATASETS / "VEDAI/Vehicules1024/00000025_co.png"
 IR_IMAGE_PATH = DATASETS / "VEDAI/Vehicules1024/00000025_ir.png"
 GT_PATH = DATASETS / "VEDAI/annotations/vedai_fold01_test_class8.json"
-OUTPUT_PATH = ROOT / "CMFC_DETR_unpacked/figures/qualitative_vedai_rgb_ir_2x4.png"
+OUTPUT_PATH = PAPER / "figures/qualitative_vedai_rgb_ir_2x4.png"
 
 METHOD_ORDER = (
     "CFT",
@@ -47,7 +45,7 @@ METHOD_ORDER = (
     "RSVDet",
     "YOLOv11-RGBT",
     "LCAFNet",
-    "CMFC-DETR",
+    "SH-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -96,7 +94,7 @@ JSON_SOURCES = {
         ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json",
         0,
     ),
-    "CMFC-DETR": (
+    "SH-DETR": (
         ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json",
         0,
     ),
@@ -272,7 +270,7 @@ def box_iou(left: Sequence[float], right: Sequence[float]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def cmfc_color(
+def shdetr_color(
     detection: Detection,
     ground_truth: Iterable[Detection],
     other_methods: Iterable[Detection],
@@ -376,8 +374,8 @@ def main() -> None:
     font_title = load_font(28)
     font_label = load_font(22)
 
-    def color_for_cmfc(detection: Detection) -> tuple[int, int, int]:
-        return cmfc_color(detection, ground_truth, other_methods)
+    def color_for_shdetr(detection: Detection) -> tuple[int, int, int]:
+        return shdetr_color(detection, ground_truth, other_methods)
 
     def color_red(_: Detection) -> tuple[int, int, int]:
         return RED
@@ -386,7 +384,7 @@ def main() -> None:
         row, column = divmod(index, 4)
         panel_left = CANVAS_MARGIN + column * (MODALITY_SIZE + COLUMN_GAP)
         image_top = CANVAS_MARGIN + row * (panel_height + ROW_GAP)
-        color_for = color_for_cmfc if name == "CMFC-DETR" else color_red
+        color_for = color_for_shdetr if name == "SH-DETR" else color_red
 
         # RGB thumbnail
         rgb_panel = source.resize((MODALITY_SIZE, MODALITY_SIZE), Image.Resampling.LANCZOS)
@@ -408,15 +406,15 @@ def main() -> None:
         canvas_draw.text((title_x, title_baseline), name, fill=TEXT,
                          font=font_title, anchor="ms")
 
-    # arrow on the CMFC-DETR panel: tail-class camping car at (787,76)-(827,134)
-    cmfc_panel_left = CANVAS_MARGIN + 3 * (MODALITY_SIZE + COLUMN_GAP)
-    cmfc_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)  # second row
+    # arrow on the SH-DETR panel: tail-class camping car at (787,76)-(827,134)
+    shdetr_panel_left = CANVAS_MARGIN + 3 * (MODALITY_SIZE + COLUMN_GAP)
+    shdetr_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)  # second row
     target = (787 + 827) / 2.0, (76 + 134) / 2.0
     end = (
-        cmfc_panel_left + target[0] * scale_x,
-        cmfc_image_top + TITLE_BAND + target[1] * scale_y,
+        shdetr_panel_left + target[0] * scale_x,
+        shdetr_image_top + TITLE_BAND + target[1] * scale_y,
     )
-    note = "Arrow: a tail-class (camping car) target that CMFC-DETR localizes with markedly higher confidence."
+    note = "Arrow: a tail-class (camping car) target that SH-DETR localizes with markedly higher confidence."
     note_x = (canvas_width - (canvas_draw.textbbox((0, 0), note, font=font_label)[2]
                               - canvas_draw.textbbox((0, 0), note, font=font_label)[0])) / 2
     note_y = canvas_height - CANVAS_MARGIN - 16

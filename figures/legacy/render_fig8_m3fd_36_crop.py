@@ -4,8 +4,8 @@
 Same rework as Fig7: each method panel is CROPPED to a square window around the
 scene's central targets (image 1024x768 -> 260x260 crop centred on (315,470)),
 making the targets large and legible. Detection boxes are mapped from image to
-crop coordinates; the CMFC-only People target (GT cat=1 at (284,431,345,478),
-matched by CMFC-DETR at 0.889) keeps its yellow box.
+crop coordinates; the SH-DETR-only People target (GT cat=1 at (284,431,345,478),
+matched by SH-DETR at 0.889) keeps its yellow box.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ IR_IMAGE_PATH = DATASETS / "M3FD/raw/ir/00400.png"
 GT_PATH = Path(
     f"{DATASETS}/M3FD/processed/lt20_seed42/annotations/instances_test.json"
 )
-OUTPUT_PATH = ROOT / "CMFC_DETR_v8/figures/qualitative_m3fd_rgb_ir_36_2x4.png"
+OUTPUT_PATH = ROOT / "SH_DETR/figures/qualitative_m3fd_rgb_ir_36_2x4.png"
 
 # Crop window (image coords): 260x260 centred on (315,470), covering the People
 # target (284,431,345,478) and the surrounding cars/people.
@@ -50,7 +50,7 @@ METHOD_ORDER = (
     "YOLOv11-RGBT",
     "LCAFNet",
     "CLDyN+RT-DETR",
-    "CMFC-DETR",
+    "SH-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -84,7 +84,7 @@ JSON_SOURCES = {
     "RT-DETR RGB": ROOT / "compare/M3FD-LT20/original-size-45e-trial/rtdetr-rgb-seed42-native-b8-45e/valbest_test_coco/predictions.json",
     "RT-DETR concat": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/baseline/predictions.json",
     "CLDyN+RT-DETR": ROOT / "compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/cldyn-vfn-rtdetr-1/val_best_test_per_class/predictions.json",
-    "CMFC-DETR": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
+    "SH-DETR": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
 }
 
 YOLO_SOURCES = {
@@ -261,16 +261,16 @@ def main() -> None:
     assert set(methods) == set(METHOD_ORDER)
 
     matches = {name: match_detections(methods[name], ground_truth) for name in METHOD_ORDER}
-    cmfc_targets = set(matches["CMFC-DETR"].values())
-    other_targets = {t for name in METHOD_ORDER if name != "CMFC-DETR" for t in matches[name].values()}
-    cmfc_unique_targets = cmfc_targets - other_targets
+    shdetr_targets = set(matches["SH-DETR"].values())
+    other_targets = {t for name in METHOD_ORDER if name != "SH-DETR" for t in matches[name].values()}
+    shdetr_unique_targets = shdetr_targets - other_targets
 
     def color_for(method: str):
         def _color(detection_index: int):
             target = matches[method].get(detection_index)
             if target is None:
                 return CYAN
-            if method == "CMFC-DETR" and target in cmfc_unique_targets:
+            if method == "SH-DETR" and target in shdetr_unique_targets:
                 return YELLOW
             return RED
         return _color
@@ -312,7 +312,7 @@ def main() -> None:
     entries = (
         (RED, "Correct detection"),
         (CYAN, "False positive"),
-        (YELLOW, "CMFC-only true positive"),
+        (YELLOW, "SH-DETR-only true positive"),
     )
     swatch, gap = 18, 30
     widths = []
@@ -337,10 +337,10 @@ def main() -> None:
     print(f"canvas={canvas_width}x{canvas_height} crop={CROP} thr={SCORE_THRESHOLD}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    yellow = [i for i in matches["CMFC-DETR"] if matches["CMFC-DETR"][i] in cmfc_unique_targets]
-    print(f"cmfc_unique(yellow)={len(yellow)}")
+    yellow = [i for i in matches["SH-DETR"] if matches["SH-DETR"][i] in shdetr_unique_targets]
+    print(f"shdetr_unique(yellow)={len(yellow)}")
     for i in yellow:
-        d = methods["CMFC-DETR"][i]
+        d = methods["SH-DETR"][i]
         print(f"  yellow xyxy={tuple(round(v,1) for v in d.xyxy)} cat={d.category_id} score={d.score:.3f}")
 
 

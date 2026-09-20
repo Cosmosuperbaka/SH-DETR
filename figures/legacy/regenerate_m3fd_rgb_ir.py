@@ -3,7 +3,7 @@
 
 Mirrors the VEDAI version: RGB (top) and infrared (bottom) views per method,
 Nimbus Roman text and compact panel size. No arrow annotation is used.
-highlights a small pedestrian target which CMFC-DETR localizes with markedly
+highlights a small pedestrian target which SH-DETR localizes with markedly
 higher confidence than the RT-DETR concat baseline (0.86 vs 0.32).
 """
 
@@ -23,9 +23,7 @@ for _parent in Path(__file__).resolve().parents:
     if (_parent / "shdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
-
-
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD, PAPER  # noqa: E402
 IMAGE_ID = 36
 STEM = "00400"
 VI_PATH = DATASETS / "M3FD/raw/vi/00400.png"
@@ -34,7 +32,7 @@ GT_PATH = Path(
     f"{DATASETS}/M3FD/processed/lt20_seed42/"
     "annotations/instances_test.json"
 )
-OUTPUT_PATH = ROOT / "CMFC_DETR_unpacked/figures/qualitative_m3fd_rgb_ir_2x4.png"
+OUTPUT_PATH = PAPER / "figures/qualitative_m3fd_rgb_ir_2x4.png"
 
 METHOD_ORDER = (
     "CFT",
@@ -44,7 +42,7 @@ METHOD_ORDER = (
     "YOLOv11-RGBT",
     "LCAFNet",
     "CLDyN+RT-DETR",
-    "CMFC-DETR",
+    "SH-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -95,7 +93,7 @@ JSON_SOURCES = {
         "cldyn-vfn-rtdetr-1/val_best_test_full_20260906/predictions.json",
         0,
     ),
-    "CMFC-DETR": (
+    "SH-DETR": (
         ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
         0,
     ),
@@ -200,7 +198,7 @@ def load_font(size: int, bold: bool = True) -> ImageFont.FreeTypeFont:
 
 
 def draw_detections(draw, detections, scale_x, scale_y, panel_w, panel_h,
-                    is_cmfc, gt, others, label_font):
+                    is_shdetr, gt, others, label_font):
     rendered = []
     for box, score, cat in detections:
         display_box = (
@@ -216,7 +214,7 @@ def draw_detections(draw, detections, scale_x, scale_y, panel_w, panel_h,
                 o[2] == target[1] and box_iou(o[0], target[0]) >= MATCH_IOU
                 for o in others
             )
-            color = YELLOW if is_cmfc and not shared else RED
+            color = YELLOW if is_shdetr and not shared else RED
         else:
             color = BLUE
         draw.rectangle(display_box, outline=color, width=BOX_WIDTH)
@@ -310,18 +308,18 @@ def main() -> None:
         row, column = divmod(index, 4)
         panel_left = CANVAS_MARGIN + column * (MODALITY_WIDTH + COLUMN_GAP)
         image_top = CANVAS_MARGIN + row * (panel_height + ROW_GAP)
-        is_cmfc = name == "CMFC-DETR"
+        is_shdetr = name == "SH-DETR"
 
         rgb_panel = source.resize((MODALITY_WIDTH, modality_height), Image.Resampling.LANCZOS)
         draw = ImageDraw.Draw(rgb_panel)
         draw_detections(draw, methods[name], scale_x, scale_y, MODALITY_WIDTH, modality_height,
-                        is_cmfc, ground_truth, others, font_label)
+                        is_shdetr, ground_truth, others, font_label)
         canvas.paste(rgb_panel, (panel_left, image_top + TITLE_BAND))
 
         ir_panel = ir.resize((MODALITY_WIDTH, modality_height), Image.Resampling.LANCZOS)
         draw = ImageDraw.Draw(ir_panel)
         draw_detections(draw, methods[name], scale_x, scale_y, MODALITY_WIDTH, modality_height,
-                        is_cmfc, ground_truth, others, font_label)
+                        is_shdetr, ground_truth, others, font_label)
         canvas.paste(ir_panel, (panel_left, image_top + TITLE_BAND + modality_height + MODALITY_GAP))
 
         canvas_draw = ImageDraw.Draw(canvas)

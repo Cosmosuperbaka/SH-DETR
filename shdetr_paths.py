@@ -16,7 +16,7 @@ Environment variables
 ==========================  ================================================
 ``SHDETR_WORKSPACE``        Root that holds all experiment trees.
                             Default: the current user's home directory.
-``SHDETR_ROOT``             Main RE-DETR / SH-DETR working repository.
+``SHDETR_ROOT``             Main SH-DETR working repository.
                             Default: ``$SHDETR_WORKSPACE/sh-detr``
 ``SHDETR_DATASETS``         Dataset root containing ``VEDAI/`` and ``M3FD/``.
                             Default: ``$SHDETR_WORKSPACE/vedai_data/datasets``
@@ -27,7 +27,7 @@ Environment variables
 ``SHDETR_MSOD``             Multispectral-object-detection checkout.
                             Default: ``$SHDETR_WORKSPACE/multispectral-object-detection``
 ``SHDETR_PAPER``            Unpacked paper sources (default figure target).
-                            Default: ``$SHDETR_ROOT/CMFC_DETR_unpacked``
+                            Default: ``$SHDETR_ROOT/SH_DETR``
 ``SHDETR_OUT_QUAL``         Output root for qualitative figures.
                             Default: ``$SHDETR_ROOT/out_qual``
 ==========================  ================================================
@@ -101,7 +101,7 @@ MSOD = _env_path("SHDETR_MSOD", WORKSPACE / "multispectral-object-detection")
 # --------------------------------------------------------------------------
 # paper sources and figure output
 # --------------------------------------------------------------------------
-PAPER = _env_path("SHDETR_PAPER", ROOT / "CMFC_DETR_unpacked")
+PAPER = _env_path("SHDETR_PAPER", ROOT / "SH_DETR")
 OUT_QUAL = _env_path("SHDETR_OUT_QUAL", ROOT / "out_qual")
 
 _ENV_VARS = {

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Render the M3FD-LT20 2x4 qualitative comparison (Fig8) for scene 36 (00400.png)
-with RGB+IR stacked panels and a genuine CMFC-only true positive.
+with RGB+IR stacked panels and a genuine SH-DETR-only true positive.
 
 * each method panel shows the visible (vi) view (top) and the infrared (ir) view
   (bottom) of M3FD scene 00400, making the multimodal input explicit;
 * detection/matching threshold is 0.50; the car target at (284,432,345,479) is a
-  NATURAL CMFC-only true positive: CMFC-DETR matches it at score 0.889 while every
+  NATURAL SH-DETR-only true positive: SH-DETR matches it at score 0.889 while every
   other method has zero matching detection (best_match_score = 0 for all 7 others),
   so it is drawn in yellow without any threshold adjustment;
-* red = correct detection, cyan = false positive, yellow = CMFC-only true positive
+* red = correct detection, cyan = false positive, yellow = SH-DETR-only true positive
   (matching the qualitative-figure legend used across the paper);
 * text is set in Nimbus Roman (Times-metric compatible).
 """
@@ -30,9 +30,7 @@ for _parent in Path(__file__).resolve().parents:
     if (_parent / "shdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
-
-
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD, PAPER  # noqa: E402
 IMAGE_ID = 36
 IMAGE_KEY = "00400"
 IMAGE_PATH = DATASETS / "M3FD/raw/vi/00400.png"
@@ -40,7 +38,7 @@ IR_IMAGE_PATH = DATASETS / "M3FD/raw/ir/00400.png"
 GT_PATH = Path(
     f"{DATASETS}/M3FD/processed/lt20_seed42/annotations/instances_test.json"
 )
-OUTPUT_PATH = ROOT / "CMFC_DETR_unpacked/figures/qualitative_m3fd_rgb_ir_36_2x4.png"
+OUTPUT_PATH = PAPER / "figures/qualitative_m3fd_rgb_ir_36_2x4.png"
 
 METHOD_ORDER = (
     "CFT",
@@ -260,16 +258,16 @@ def main() -> None:
     assert set(methods) == set(METHOD_ORDER)
 
     matches = {name: match_detections(methods[name], ground_truth) for name in METHOD_ORDER}
-    cmfc_targets = set(matches["SH-DETR"].values())
+    shdetr_targets = set(matches["SH-DETR"].values())
     other_targets = {t for name in METHOD_ORDER if name != "SH-DETR" for t in matches[name].values()}
-    cmfc_unique_targets = cmfc_targets - other_targets
+    shdetr_unique_targets = shdetr_targets - other_targets
 
     def color_for(method: str):
         def _color(detection_index: int):
             target = matches[method].get(detection_index)
             if target is None:
                 return CYAN
-            if method == "SH-DETR" and target in cmfc_unique_targets:
+            if method == "SH-DETR" and target in shdetr_unique_targets:
                 return YELLOW
             return RED
         return _color
@@ -305,13 +303,13 @@ def main() -> None:
         title_y = image_top + TITLE_BAND - TITLE_GAP - (text_box[3] - text_box[1]) - text_box[1]
         canvas_draw.text((title_x, title_y), name, fill=TEXT, font=font_title)
 
-    # arrow -> the CMFC-only car at (284,432,345,479) in the CMFC-DETR RGB thumbnail
-    cmfc_panel_left = CANVAS_MARGIN + 3 * (MODALITY_WIDTH + COLUMN_GAP)
-    cmfc_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)
+    # arrow -> the SH-DETR-only car at (284,432,345,479) in the SH-DETR RGB thumbnail
+    shdetr_panel_left = CANVAS_MARGIN + 3 * (MODALITY_WIDTH + COLUMN_GAP)
+    shdetr_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)
     target = (284 + 345) / 2.0, (432 + 479) / 2.0
     end = (
-        cmfc_panel_left + target[0] * scale_x,
-        cmfc_image_top + TITLE_BAND + target[1] * scale_y,
+        shdetr_panel_left + target[0] * scale_x,
+        shdetr_image_top + TITLE_BAND + target[1] * scale_y,
     )
     start = (end[0], end[1] + 36)
     canvas_draw = ImageDraw.Draw(canvas)
@@ -357,8 +355,8 @@ def main() -> None:
     print(f"canvas={canvas_width}x{canvas_height} image={IMAGE_KEY} thr={SCORE_THRESHOLD}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    yellow = [i for i in matches["SH-DETR"] if matches["SH-DETR"][i] in cmfc_unique_targets]
-    print(f"cmfc_unique(yellow)={len(yellow)}")
+    yellow = [i for i in matches["SH-DETR"] if matches["SH-DETR"][i] in shdetr_unique_targets]
+    print(f"shdetr_unique(yellow)={len(yellow)}")
     for i in yellow:
         d = methods["SH-DETR"][i]
         print(f"  yellow xyxy={tuple(round(v,1) for v in d.xyxy)} cat={d.category_id} score={d.score:.3f}")

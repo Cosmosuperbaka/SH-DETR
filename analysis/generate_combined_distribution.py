@@ -8,7 +8,7 @@ so the type matches the paper body set in newtxtext.
 Head/tail partition follows the paper's cumulative-instance threshold tau=0.6:
   VEDAI   head = {car, pickup} (cum 62.9%),  tail = other 6 classes
   M3FD    head = {Car, People} (cum 80.1%), tail = other 4 classes
-Verified against Table II: CMFC-DETR VEDAI AP-h = mean(car 62.99, pickup 62.75)
+Verified against Table II: SH-DETR VEDAI AP-h = mean(car 62.99, pickup 62.75)
 = 62.87, AP-t = mean of the six tail classes = 58.12.
 """
 

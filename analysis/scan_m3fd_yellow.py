@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Scan M3FD-LT20 test set for CMFC-only detections.
+"""Scan M3FD-LT20 test set for SH-DETR-only detections.
 
-Reports (a) targets that are NATURALLY CMFC-only at SCORE_THRESHOLD=0.5
+Reports (a) targets that are NATURALLY SH-DETR-only at SCORE_THRESHOLD=0.5
 (yellow-box candidates with no threshold trickery) and (b) margin candidates
-where CMFC strictly beats every other method's confidence.
+where SH-DETR strictly beats every other method's confidence.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ JSON_SOURCES = {
     "RT-DETR RGB": (ROOT / "compare/M3FD-LT20/original-size-45e-trial/rtdetr-rgb-seed42-native-b8-45e/valbest_test_coco/predictions.json", 0),
     "RT-DETR concat": (ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/baseline/predictions.json", 0),
     "CLDyN+RT-DETR": (ROOT / "compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/cldyn-vfn-rtdetr-1/val_best_test_per_class/predictions.json", 0),
-    "CMFC-DETR": (ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json", 0),
+    "SH-DETR": (ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json", 0),
 }
 YOLO_SOURCES = {
     "CFT": (MSOD / "runs/M3FD-LT20/cft_x3_s42_300e_b8_1024_valbest_test_20260802/labels", 0),
@@ -41,7 +41,7 @@ YOLO_SOURCES = {
     "YOLOv11-RGBT": (ROOT / "compare/rerun_m3fd_s42_protocol_20260802/YOLOv11_RGBT_best_test_s42_img1024_b8/labels", 0),
     "LCAFNet": (LCAFNET / "runs/M3FD-LT20/lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels", 0),
 }
-METHOD_ORDER = ["CFT", "RT-DETR RGB", "RT-DETR concat", "C2DFF-Net", "YOLOv11-RGBT", "LCAFNet", "CLDyN+RT-DETR", "CMFC-DETR"]
+METHOD_ORDER = ["CFT", "RT-DETR RGB", "RT-DETR concat", "C2DFF-Net", "YOLOv11-RGBT", "LCAFNet", "CLDyN+RT-DETR", "SH-DETR"]
 
 
 def iou(a, b):
@@ -158,37 +158,37 @@ def main():
     print(f"gt scenes={len(gt_by_img)}", flush=True)
 
     natural = []      # unique at 0.5 threshold
-    margins = []      # cmfc strictly > everyone, cmfc>0.5
+    margins = []      # shdetr strictly > everyone, shdetr>0.5
     tp_total = {n: 0 for n in METHOD_ORDER}
     for img_id, gts in sorted(gt_by_img.items()):
         ms = {name: match(methods[name].get(img_id, []), gts) for name in METHOD_ORDER}
         for n in METHOD_ORDER:
             tp_total[n] += len(ms[n])
-        other = {t for name in METHOD_ORDER if name != "CMFC-DETR" for t in ms[name]}
+        other = {t for name in METHOD_ORDER if name != "SH-DETR" for t in ms[name]}
         for ti, gt in enumerate(gts):
             scores = {n: best_match_score(methods[n].get(img_id, []), gt) for n in METHOD_ORDER}
-            cmfc = scores["CMFC-DETR"]
-            others = {n: s for n, s in scores.items() if n != "CMFC-DETR"}
+            shdetr = scores["SH-DETR"]
+            others = {n: s for n, s in scores.items() if n != "SH-DETR"}
             second = max(others.values())
-            if cmfc <= 0.5:
+            if shdetr <= 0.5:
                 continue
-            if ti in ms["CMFC-DETR"] and ti not in other:
+            if ti in ms["SH-DETR"] and ti not in other:
                 natural.append({"img": img_id, "cat": NAMES.get(gt["cat"], str(gt["cat"])),
-                                "xyxy": tuple(round(v, 1) for v in gt["xyxy"]), "cmfc": round(cmfc, 3)})
-            if second < cmfc:
+                                "xyxy": tuple(round(v, 1) for v in gt["xyxy"]), "shdetr": round(shdetr, 3)})
+            if second < shdetr:
                 margins.append({"img": img_id, "cat": NAMES.get(gt["cat"], str(gt["cat"])),
                                 "xyxy": tuple(round(v, 1) for v in gt["xyxy"]),
-                                "cmfc": round(cmfc, 3), "second": round(second, 3),
-                                "margin": round(cmfc - second, 3),
+                                "shdetr": round(shdetr, 3), "second": round(second, 3),
+                                "margin": round(shdetr - second, 3),
                                 "who": [n for n, s in others.items() if s == second]})
 
     print(f"\nper-method total TP (M3FD-LT20 test): {tp_total}")
-    print(f"\nNATURAL CMFC-only TP at thr=0.5: {len(natural)}")
-    for c in sorted(natural, key=lambda c: -c["cmfc"])[:30]:
-        print(f"  img={c['img']:>4} cat={c['cat']:<10} xyxy={c['xyxy']} cmfc={c['cmfc']}")
-    print(f"\nMARGIN candidates (cmfc strictly best): {len(margins)}")
+    print(f"\nNATURAL SH-DETR-only TP at thr=0.5: {len(natural)}")
+    for c in sorted(natural, key=lambda c: -c["shdetr"])[:30]:
+        print(f"  img={c['img']:>4} cat={c['cat']:<10} xyxy={c['xyxy']} shdetr={c['shdetr']}")
+    print(f"\nMARGIN candidates (shdetr strictly best): {len(margins)}")
     for c in sorted(margins, key=lambda c: -c["margin"])[:30]:
-        print(f"  img={c['img']:>4} cat={c['cat']:<10} xyxy={c['xyxy']} cmfc={c['cmfc']} "
+        print(f"  img={c['img']:>4} cat={c['cat']:<10} xyxy={c['xyxy']} shdetr={c['shdetr']} "
               f"second={c['second']} ({c['who'][0]}) margin={c['margin']}")
     by_scene = Counter(c["img"] for c in natural)
     print(f"\nscenes with natural unique: {dict(sorted(by_scene.items(), key=lambda x: -x[1]))}")
