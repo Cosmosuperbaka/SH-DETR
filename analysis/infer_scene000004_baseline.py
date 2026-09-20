@@ -13,17 +13,26 @@ import json
 import sys
 from pathlib import Path
 
+
 import torch
 
-CODE = Path("/home/denglingjun/re-detr-last/rtdetrv2_pytorch")
+CODE = ROOT / "rtdetrv2_pytorch"
 sys.path.insert(0, str(CODE))
 
 from src.core import YAMLConfig, yaml_utils  # noqa: E402
 
+
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT  # noqa: E402
+
+
 CFG = CODE / "configs/rtdetrv2/rtdetrv2_r50vd_vedai_1024_concat_baseline_seed3407_fold03_30e.yml"
-CKPT = Path("/home/denglingjun/re-detr-last/results/VEDAI/baseline-10fold/baseline-fold3/best.pth")
+CKPT = ROOT / "results/VEDAI/baseline-10fold/baseline-fold3/best.pth"
 TARGET_ID = 4
-OUT = Path("/home/denglingjun/re-detr-last/outputs/vedai_scene000004_baseline_fold03_predictions.json")
+OUT = ROOT / "outputs/vedai_scene000004_baseline_fold03_predictions.json"
 
 
 def main() -> None:

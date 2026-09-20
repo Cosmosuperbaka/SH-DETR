@@ -6,11 +6,19 @@ import shutil
 import zipfile
 from pathlib import Path
 
+
 from PIL import Image, ImageDraw
 
+import sys
 
-ROOT = Path("/home/denglingjun/re-detr-last")
-DATA = Path("/home/denglingjun/vedai_data/datasets/VEDAI")
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT, DATASETS  # noqa: E402
+
+
+DATA = DATASETS / "VEDAI"
 IMAGE_DIR = DATA / "Vehicules1024"
 ANN = DATA / "annotations/vedai_fold01_test_class8.json"
 OUT = ROOT / "流程图总图素材"

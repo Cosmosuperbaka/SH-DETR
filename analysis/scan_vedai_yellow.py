@@ -16,17 +16,23 @@ import math
 import sys
 from pathlib import Path
 
-ROOT = Path("/home/denglingjun/re-detr-last")
 
-GT_PATH = Path("/home/denglingjun/vedai_data/datasets/VEDAI/annotations/vedai_fold01_test_class8.json")
-IMAGE_DIR = Path("/home/denglingjun/vedai_data/datasets/VEDAI/Vehicules1024")
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
+
+
+GT_PATH = DATASETS / "VEDAI/annotations/vedai_fold01_test_class8.json"
+IMAGE_DIR = DATASETS / "VEDAI/Vehicules1024"
 CLASS8 = {1: "car", 2: "truck", 3: "pickup", 4: "tractor", 5: "camping_car", 6: "boat", 7: "plane", 8: "van"}
 
 MATCH_IOU = 0.50
 SCORE_THRESHOLD = 0.50
 
 JSON_SOURCES = {
-    "CFT": (Path("/home/denglingjun/CFT/runs/VEDAI/CFT-26-fold1_valbest_test_20260802/best_predictions.json"), 1),
+    "CFT": (CFT / "runs/VEDAI/CFT-26-fold1_valbest_test_20260802/best_predictions.json", 1),
     "C2DFF-Net": (ROOT / "compare/C2DFF_VEDAI/runs/c2dff_s3407_uuid2_valbest_test_20260802/predictions.json", 1),
     "RT-DETR RGB": (ROOT / "outputs/vedai_direct_test_unified/rgb/seed_3407/predictions.json", 0),
     "RT-DETR concat": (ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json", 0),
@@ -34,7 +40,7 @@ JSON_SOURCES = {
 }
 YOLO_SOURCES = {
     "YOLOv11-RGBT": ROOT / "compare/YOLOv11_RGBT/runs/yolov11_rgbt_vedai_s3407_uuid2_valbest_test_20260802/labels",
-    "LCAFNet": Path("/home/denglingjun/LCAFNet/runs/VEDAI/lcafnet_s3407_uuid_valbest_test_20260802/labels"),
+    "LCAFNet": LCAFNET / "runs/VEDAI/lcafnet_s3407_uuid_valbest_test_20260802/labels",
 }
 
 METHOD_ORDER = list(JSON_SOURCES) + list(YOLO_SOURCES)

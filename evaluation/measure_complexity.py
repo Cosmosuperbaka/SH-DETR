@@ -24,7 +24,15 @@ import sys
 import time
 from pathlib import Path
 
+
 import torch
+
+
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT  # noqa: E402
 
 
 def human(n):
@@ -79,7 +87,7 @@ def build_ultralytics(weights, imgsz, ch=6, repo=None):
 
 # ---------------------------------------------------------------- SFFR / YOLOv5
 def build_yolov5_dual(weights, imgsz,
-                      repo="/home/denglingjun/re-detr-last/compare/SFFR_VEDAI"):
+                      repo=f"{ROOT}/compare/SFFR_VEDAI"):
     """Dual-stream YOLOv5 forks (SFFR, DARFNet): the DetectionModel takes (rgb, ir).
 
     ``attempt_load`` may return either the DetectionModel or an ``Ensemble``
@@ -107,7 +115,7 @@ def build_yolov5_dual(weights, imgsz,
 
 
 # ---------------------------------------------------------------- RT-DETR
-def build_rtdetr(config, weights, repo="/home/denglingjun/re-detr-last/rtdetrv2_pytorch",
+def build_rtdetr(config, weights, repo=f"{ROOT}/rtdetrv2_pytorch",
                  device="cuda:0"):
     sys.path.insert(0, repo)
     os.chdir(repo)
@@ -155,9 +163,9 @@ def main():
             args.weights, args.imgsz, ch=6, repo=args.repo or None)
         res = [args.imgsz, args.imgsz]
     elif args.method in ("sffr", "darfnet"):
-        default_repo = ("/home/denglingjun/re-detr-last/compare/SFFR_VEDAI"
+        default_repo = (f"{ROOT}/compare/SFFR_VEDAI"
                         if args.method == "sffr"
-                        else "/home/denglingjun/re-detr-last/compare/DARFNet_VEDAI")
+                        else f"{ROOT}/compare/DARFNet_VEDAI")
         net, run, n_params = build_yolov5_dual(
             args.weights, args.imgsz, repo=args.repo or default_repo)
         res = [args.imgsz, args.imgsz]

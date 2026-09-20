@@ -10,12 +10,19 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+
 from typing import Iterable, Mapping, Sequence
 
 from PIL import Image, ImageDraw, ImageFont
 
 
-ROOT = Path("/home/denglingjun/re-detr-last")
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
+
+
 PAPER_ROOT = ROOT / "CMFC_DETR_unpacked"
 
 SCORE_THRESHOLD = 0.50
@@ -114,10 +121,10 @@ class CandidateMetrics:
 VEDAI = DatasetConfig(
     name="VEDAI",
     annotation_path=Path(
-        "/home/denglingjun/vedai_data/datasets/VEDAI/annotations/"
+        f"{DATASETS}/VEDAI/annotations/"
         "vedai_fold01_test_class8.json"
     ),
-    image_dir=Path("/home/denglingjun/vedai_data/datasets/VEDAI/Vehicules1024"),
+    image_dir=DATASETS / "VEDAI/Vehicules1024",
     method_order=(
         "CFT",
         "C2DFF-Net",
@@ -131,7 +138,7 @@ VEDAI = DatasetConfig(
     json_sources={
         "CFT": JsonSource(
             Path(
-                "/home/denglingjun/CFT/runs/VEDAI/"
+                f"{CFT}/runs/VEDAI/"
                 "CFT-26-fold1_valbest_test_20260802/best_predictions.json"
             ),
             1,
@@ -161,7 +168,7 @@ VEDAI = DatasetConfig(
         ),
         "LCAFNet": YoloSource(
             Path(
-                "/home/denglingjun/LCAFNet/runs/VEDAI/"
+                f"{LCAFNET}/runs/VEDAI/"
                 "lcafnet_s3407_uuid_valbest_test_20260802/labels"
             ),
             1,
@@ -175,10 +182,10 @@ VEDAI = DatasetConfig(
 M3FD = DatasetConfig(
     name="M3FD-LT20",
     annotation_path=Path(
-        "/home/denglingjun/vedai_data/datasets/M3FD/processed/lt20_seed42/"
+        f"{DATASETS}/M3FD/processed/lt20_seed42/"
         "annotations/instances_test.json"
     ),
-    image_dir=Path("/home/denglingjun/vedai_data/datasets/M3FD/raw/vi"),
+    image_dir=DATASETS / "M3FD/raw/vi",
     method_order=(
         "CFT",
         "RT-DETR RGB",
@@ -214,7 +221,7 @@ M3FD = DatasetConfig(
     yolo_sources={
         "CFT": YoloSource(
             Path(
-                "/home/denglingjun/multispectral-object-detection/runs/M3FD-LT20/"
+                f"{MSOD}/runs/M3FD-LT20/"
                 "cft_x3_s42_300e_b8_1024_valbest_test_20260802/labels"
             )
         ),
@@ -230,7 +237,7 @@ M3FD = DatasetConfig(
         ),
         "LCAFNet": YoloSource(
             Path(
-                "/home/denglingjun/LCAFNet/runs/M3FD-LT20/"
+                f"{LCAFNET}/runs/M3FD-LT20/"
                 "lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels"
             )
         ),

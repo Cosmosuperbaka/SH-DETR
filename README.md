@@ -105,16 +105,36 @@ when they have to run inference instead of reading cached predictions.
 
 ## Data and checkpoints
 
-Nothing in this repository downloads data automatically. All scripts read from
-absolute paths under the experiment server, e.g.
+Nothing in this repository downloads data automatically, and **no experiment
+path is hard-coded**. Every location is resolved at import time by
+[`shdetr_paths.py`](shdetr_paths.py), which reads environment variables and
+falls back to defaults derived from the current user's home directory:
 
+| Variable | Meaning | Default |
+|---|---|---|
+| `SHDETR_WORKSPACE` | Root holding all experiment trees | `~` |
+| `SHDETR_ROOT` | Main SH-DETR working repository | `$SHDETR_WORKSPACE/sh-detr` |
+| `SHDETR_DATASETS` | Dataset root containing `VEDAI/`, `M3FD/` | `$SHDETR_WORKSPACE/vedai_data/datasets` |
+| `SHDETR_CFT` | CFT comparison checkout | `$SHDETR_WORKSPACE/CFT` |
+| `SHDETR_LCAFNET` | LCAFNet comparison checkout | `$SHDETR_WORKSPACE/LCAFNet` |
+| `SHDETR_MSOD` | Multispectral-object-detection checkout | `$SHDETR_WORKSPACE/multispectral-object-detection` |
+| `SHDETR_PAPER` | Unpacked paper sources (figure target) | `$SHDETR_ROOT/CMFC_DETR_unpacked` |
+| `SHDETR_OUT_QUAL` | Qualitative-figure output root | `$SHDETR_ROOT/out_qual` |
+
+Print the resolved values before running anything, and export the ones your
+machine needs:
+
+```bash
+python3 shdetr_paths.py                 # show every resolved path
+export SHDETR_ROOT=/data/shd/detr       # override a single location
+export SHDETR_WORKSPACE=/mnt/experiments
 ```
-/home/denglingjun/vedai_data/datasets/          # VEDAI, M3FD
-/home/denglingjun/re-detr-last/datasets/        # DVTOD, RTDOD
-/home/denglingjun/re-detr-last/compare/         # comparison methods
-/home/denglingjun/re-detr-last/outputs/         # SH-DETR / RT-DETR predictions
-/home/denglingjun/re-detr-last/result/          # RTDOD (DVTOD) predictions
-```
+
+Inside the repository the experiment trees are referenced as
+`ROOT/datasets/` (DVTOD, RTDOD), `ROOT/compare/` (comparison methods),
+`ROOT/outputs/` (SH-DETR / RT-DETR predictions) and `ROOT/result/`
+(RTDOD predictions). Scripts are portable as long as these trees exist
+somewhere and the variables point at them.
 
 See [docs/PATHS.md](docs/PATHS.md) for the full list, including which
 `predictions.json` file feeds which panel of each figure.

@@ -10,10 +10,19 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 from collections import Counter
 
-ROOT = Path("/home/denglingjun/re-detr-last")
-GT_PATH = Path("/home/denglingjun/vedai_data/datasets/M3FD/processed/lt20_seed42/annotations/instances_test.json")
+import sys
+
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
+
+
+GT_PATH = DATASETS / "M3FD/processed/lt20_seed42/annotations/instances_test.json"
 W, H = 1024, 768
 NAMES = {0: "People", 1: "Car", 2: "Bus", 3: "Lamp", 4: "Motorcycle", 5: "Truck"}
 
@@ -27,10 +36,10 @@ JSON_SOURCES = {
     "CMFC-DETR": (ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json", 0),
 }
 YOLO_SOURCES = {
-    "CFT": (Path("/home/denglingjun/multispectral-object-detection/runs/M3FD-LT20/cft_x3_s42_300e_b8_1024_valbest_test_20260802/labels"), 0),
+    "CFT": (MSOD / "runs/M3FD-LT20/cft_x3_s42_300e_b8_1024_valbest_test_20260802/labels", 0),
     "C2DFF-Net": (ROOT / "compare/rerun_m3fd_s42_protocol_20260802/C2DFF_best_test_s42_img1024_b8/labels", 0),
     "YOLOv11-RGBT": (ROOT / "compare/rerun_m3fd_s42_protocol_20260802/YOLOv11_RGBT_best_test_s42_img1024_b8/labels", 0),
-    "LCAFNet": (Path("/home/denglingjun/LCAFNet/runs/M3FD-LT20/lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels"), 0),
+    "LCAFNet": (LCAFNET / "runs/M3FD-LT20/lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels", 0),
 }
 METHOD_ORDER = ["CFT", "RT-DETR RGB", "RT-DETR concat", "C2DFF-Net", "YOLOv11-RGBT", "LCAFNet", "CLDyN+RT-DETR", "CMFC-DETR"]
 

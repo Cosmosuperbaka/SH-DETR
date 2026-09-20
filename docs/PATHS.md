@@ -1,16 +1,24 @@
 # Data, checkpoint and prediction paths
 
-Every script in this repository reads from **absolute paths on the experiment
-server**. Nothing is downloaded automatically. This file documents which file
-feeds which panel of each figure so the setup can be rebuilt on another machine.
+Every script in this repository resolves its input paths through
+[`shdetr_paths.py`](../shdetr_paths.py) — nothing is hard-coded to a particular
+machine or user. This file documents which file feeds which panel of each figure
+so the setup can be rebuilt elsewhere.
 
-Conventions used below:
+Notation used below:
 
-* `ROOT = /home/denglingjun/re-detr-last`
-* `B    = ROOT/compare/DVTOD_compare_20260910`
-* all `predictions.json` files are COCO-format detection dumps; YOLO-family runs
-  additionally ship the usual `labels/*.txt` with six whitespace-separated
-  fields (`class cx cy w h score`, all normalised).
+* `ROOT` — main SH-DETR working repository (`$SHDETR_ROOT`, default
+  `$SHDETR_WORKSPACE/sh-detr`)
+* `DATASETS` — dataset root (`$SHDETR_DATASETS`, default
+  `$SHDETR_WORKSPACE/vedai_data/datasets`)
+* `CFT` / `LCAFNET` / `MSOD` — comparison-method checkouts; see
+  [`shdetr_paths.py`](../shdetr_paths.py) for their defaults
+* `B` — `ROOT/compare/DVTOD_compare_20260910`
+
+Run `python3 shdetr_paths.py` to print the values actually in effect.
+All `predictions.json` files are COCO-format detection dumps; YOLO-family runs
+additionally ship the usual `labels/*.txt` with six whitespace-separated fields
+(`class cx cy w h score`, all normalised).
 
 ---
 
@@ -18,19 +26,19 @@ Conventions used below:
 
 | Item | Path |
 |---|---|
-| Visible image | `~/vedai_data/datasets/VEDAI/Vehicules1024/00001033_co.png` |
-| Infrared image | `~/vedai_data/datasets/VEDAI/Vehicules1024/00001033_ir.png` |
-| Ground truth | `~/vedai_data/datasets/VEDAI/annotations/vedai_fold01_test_class8.json` (`image_id = 1033`) |
+| Visible image | `DATASETS/VEDAI/Vehicules1024/00001033_co.png` |
+| Infrared image | `DATASETS/VEDAI/Vehicules1024/00001033_ir.png` |
+| Ground truth | `DATASETS/VEDAI/annotations/vedai_fold01_test_class8.json` (`image_id = 1033`) |
 
 | Panel | Source |
 |---|---|
-| CFT | `~/CFT/runs/VEDAI/CFT-26-fold1_valbest_test_20260802/best_predictions.json` (+1 class offset) |
+| CFT | `CFT/runs/VEDAI/CFT-26-fold1_valbest_test_20260802/best_predictions.json` (+1 class offset) |
 | C2DFF-Net | `ROOT/compare/C2DFF_VEDAI/runs/c2dff_s3407_uuid2_valbest_test_20260802/predictions.json` (+1) |
 | RT-DETR RGB | `ROOT/outputs/vedai_direct_test_unified/rgb/seed_3407/predictions.json` |
 | RT-DETR concat | `ROOT/outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json` |
 | RSVDet | `ROOT/outputs/compare_vedai_icafusion_rsvdet/rsvdet/eval_best/predictions.json` |
 | YOLOv11-RGBT | `ROOT/compare/YOLOv11_RGBT/runs/yolov11_rgbt_vedai_s3407_uuid2_valbest_test_20260802/labels/00001033_co.txt` |
-| LCAFNet | `~/LCAFNet/runs/VEDAI/lcafnet_s3407_uuid_valbest_test_20260802/labels/00001033_co.txt` |
+| LCAFNet | `LCAFNET/runs/VEDAI/lcafnet_s3407_uuid_valbest_test_20260802/labels/00001033_co.txt` |
 | SH-DETR | `ROOT/outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json` |
 
 Thresholds: score ≥ 0.70, match IoU ≥ 0.50. The renderer crops the window
@@ -42,18 +50,18 @@ Thresholds: score ≥ 0.70, match IoU ≥ 0.50. The renderer crops the window
 
 | Item | Path |
 |---|---|
-| Visible image | `~/vedai_data/datasets/M3FD/raw/vi/00400.png` |
-| Infrared image | `~/vedai_data/datasets/M3FD/raw/ir/00400.png` |
-| Ground truth | `~/vedai_data/datasets/M3FD/processed/lt20_seed42/annotations/instances_test.json` (`image_id = 36`) |
+| Visible image | `DATASETS/M3FD/raw/vi/00400.png` |
+| Infrared image | `DATASETS/M3FD/raw/ir/00400.png` |
+| Ground truth | `DATASETS/M3FD/processed/lt20_seed42/annotations/instances_test.json` (`image_id = 36`) |
 
 | Panel | Source |
 |---|---|
-| CFT | `~/multispectral-object-detection/runs/M3FD-LT20/cft_x3_s42_300e_b8_1024_valbest_test_20260802/labels/00400.txt` |
+| CFT | `MSOD/runs/M3FD-LT20/cft_x3_s42_300e_b8_1024_valbest_test_20260802/labels/00400.txt` |
 | RT-DETR RGB | `ROOT/compare/M3FD-LT20/original-size-45e-trial/rtdetr-rgb-seed42-native-b8-45e/valbest_test_coco/predictions.json` |
 | RT-DETR concat | `ROOT/outputs/m3fd_lt20_s42_b8_valbest_test_requested/baseline/predictions.json` |
 | C2DFF-Net | `ROOT/compare/rerun_m3fd_s42_protocol_20260802/C2DFF_best_test_s42_img1024_b8/labels/00400.txt` |
 | YOLOv11-RGBT | `ROOT/compare/rerun_m3fd_s42_protocol_20260802/YOLOv11_RGBT_best_test_s42_img1024_b8/labels/00400.txt` |
-| LCAFNet | `~/LCAFNet/runs/M3FD-LT20/lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels/00400.txt` |
+| LCAFNet | `LCAFNET/runs/M3FD-LT20/lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels/00400.txt` |
 | CLDyN+RT-DETR | `ROOT/compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/cldyn-vfn-rtdetr-1/val_best_test_full_20260906/predictions.json` |
 | SH-DETR | `ROOT/outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json` |
 

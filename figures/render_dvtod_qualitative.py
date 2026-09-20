@@ -15,9 +15,18 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path("/home/denglingjun/re-detr-last")
+import sys
+
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT  # noqa: E402
+
+
 B = ROOT / "compare/DVTOD_compare_20260910"
 
 STEM = "1857"

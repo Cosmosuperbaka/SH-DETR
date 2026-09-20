@@ -12,18 +12,26 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+
 from typing import Sequence
 
 from PIL import Image, ImageDraw, ImageFont
 
+import sys
 
-ROOT = Path("/home/denglingjun/re-detr-last")
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
+
+
 IMAGE_ID = 36
 STEM = "00400"
-VI_PATH = Path("/home/denglingjun/vedai_data/datasets/M3FD/raw/vi/00400.png")
-IR_PATH = Path("/home/denglingjun/vedai_data/datasets/M3FD/raw/ir/00400.png")
+VI_PATH = DATASETS / "M3FD/raw/vi/00400.png"
+IR_PATH = DATASETS / "M3FD/raw/ir/00400.png"
 GT_PATH = Path(
-    "/home/denglingjun/vedai_data/datasets/M3FD/processed/lt20_seed42/"
+    f"{DATASETS}/M3FD/processed/lt20_seed42/"
     "annotations/instances_test.json"
 )
 OUTPUT_PATH = ROOT / "CMFC_DETR_unpacked/figures/qualitative_m3fd_rgb_ir_2x4.png"
@@ -95,7 +103,7 @@ JSON_SOURCES = {
 
 YOLO_SOURCES = {
     "CFT": Path(
-        "/home/denglingjun/multispectral-object-detection/runs/M3FD-LT20/"
+        f"{MSOD}/runs/M3FD-LT20/"
         "cft_x3_s42_300e_b8_1024_valbest_test_20260802/labels/00400.txt"
     ),
     "C2DFF-Net": ROOT / "compare/rerun_m3fd_s42_protocol_20260802/"
@@ -103,7 +111,7 @@ YOLO_SOURCES = {
     "YOLOv11-RGBT": ROOT / "compare/rerun_m3fd_s42_protocol_20260802/"
     "YOLOv11_RGBT_best_test_s42_img1024_b8/labels/00400.txt",
     "LCAFNet": Path(
-        "/home/denglingjun/LCAFNet/runs/M3FD-LT20/"
+        f"{LCAFNET}/runs/M3FD-LT20/"
         "lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels/00400.txt"
     ),
 }

@@ -21,11 +21,20 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+
 from typing import Sequence
 
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path("/home/denglingjun/re-detr-last")
+import sys
+
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT  # noqa: E402
+
+
 B = ROOT / "compare/DVTOD_compare_20260910"
 
 GT_PATH = ROOT / "datasets/RTDOD_HBB_3class/annotations/instances_val.json"
@@ -282,7 +291,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--scan", action="store_true")
     ap.add_argument("--stem", default="")
-    ap.add_argument("--out", default="/home/denglingjun/re-detr-last/out_qual/dvtod_qual.png")
+    ap.add_argument("--out", default=f"{ROOT}/out_qual/dvtod_qual.png")
     args = ap.parse_args()
 
     gt, stem_by_id = load_gt()

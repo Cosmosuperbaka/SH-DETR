@@ -27,10 +27,20 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+
 import cv2
 
-DATASET = Path("/home/denglingjun/re-detr-last/datasets/DVTOD dataset")
-BASE = Path("/home/denglingjun/re-detr-last/compare/DVTOD_compare_20260910")
+import sys
+
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT  # noqa: E402
+
+
+DATASET = ROOT / "datasets/DVTOD dataset"
+BASE = ROOT / "compare/DVTOD_compare_20260910"
 DATA = BASE / "data"
 RGB_IR_SIZE = (1920, 1080)  # (w, h)
 SPLITS = ("train", "val")

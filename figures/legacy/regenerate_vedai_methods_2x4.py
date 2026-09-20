@@ -9,17 +9,24 @@ import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
 from typing import Iterable, Sequence
 
 from PIL import Image, ImageDraw, ImageFont
 
 
-ROOT = Path("/home/denglingjun/re-detr-last")
+for _parent in Path(__file__).resolve().parents:
+    if (_parent / "shdetr_paths.py").is_file():
+        sys.path.insert(0, str(_parent))
+        break
+from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
+
+
 PAPER_ROOT = ROOT / "CMFC_DETR_unpacked"
 IMAGE_ID = 25
 IMAGE_KEY = "00000025_co"
-IMAGE_PATH = Path("/home/denglingjun/vedai_data/datasets/VEDAI/Vehicules1024/00000025_co.png")
-GT_PATH = Path("/home/denglingjun/vedai_data/datasets/VEDAI/annotations/vedai_fold01_test_class8.json")
+IMAGE_PATH = DATASETS / "VEDAI/Vehicules1024/00000025_co.png"
+GT_PATH = DATASETS / "VEDAI/annotations/vedai_fold01_test_class8.json"
 OUTPUT_PATH = PAPER_ROOT / "figures/qualitative_vedai_methods_2x4_table1_nodeyolo.png"
 
 METHOD_ORDER = (
@@ -69,7 +76,7 @@ class ResizePad:
 
 JSON_SOURCES = {
     "CFT": (
-        Path("/home/denglingjun/CFT/runs/VEDAI/CFT-26-fold1_valbest_test_20260802/best_predictions.json"),
+        CFT / "runs/VEDAI/CFT-26-fold1_valbest_test_20260802/best_predictions.json",
         1,
     ),
     "C2DFF-Net": (
@@ -94,7 +101,7 @@ YOLO_SOURCES = {
     "YOLOv11-RGBT": ROOT
     / "compare/YOLOv11_RGBT/runs/yolov11_rgbt_vedai_s3407_uuid2_valbest_test_20260802/labels/00000025_co.txt",
     "LCAFNet": Path(
-        "/home/denglingjun/LCAFNet/runs/VEDAI/"
+        f"{LCAFNET}/runs/VEDAI/"
         "lcafnet_s3407_uuid_valbest_test_20260802/labels/00000025_co.txt"
     ),
 }
