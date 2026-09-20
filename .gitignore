@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Renderer output — figures are regenerated on the experiment server
+out_qual/
+outputs/
+figures/out/
+*.log
+
+# Datasets and checkpoints must never be committed
+data/
+datasets/
+weights/
+*.pth
+*.pt
+*.ckpt
+*.pkl
