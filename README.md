@@ -173,7 +173,7 @@ predictions) and a **same-class IoU threshold of 0.50**.
 @article{chen2026shdetr,
   title   = {Symmetric Cross-Modal Fusion and Reliability-Aware Query Supervision
              for Long-Tailed {RGB--IR} Object Detection in Aerial Remote Sensing},
-  author  = {Chen, Yi and Deng, Lingjun and Zhong, Chuanhao and Liu, Chang and Dong, Yanni},
+  author  = {Chen, Yi and Deng, Lingjun and Zhong, Chuen-Ho and Liu, Chang and Dong, Yanni},
   journal = {IEEE Journal of Selected Topics in Applied Earth Observations
              and Remote Sensing},
   year    = {2026}
