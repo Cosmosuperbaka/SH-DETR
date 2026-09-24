@@ -2,8 +2,8 @@
 
 Reference code for the paper
 
-> **Symmetric Cross-Modal Fusion and Reliability-Aware Query Supervision for
-> Long-Tailed RGB–IR Object Detection in Aerial Remote Sensing**
+> **Symmetric Fusion and Reliability-Aware Supervision for Long-Tailed RGB–IR
+> Remote-Sensing Detection**
 
 SH-DETR is a dual-stream RGB–IR detector for aerial remote sensing. It keeps the
 RT-DETR inference pathway unchanged and adds three training-side components plus
@@ -171,8 +171,8 @@ predictions) and a **same-class IoU threshold of 0.50**.
 
 ```bibtex
 @article{chen2026shdetr,
-  title   = {Symmetric Cross-Modal Fusion and Reliability-Aware Query Supervision
-             for Long-Tailed {RGB--IR} Object Detection in Aerial Remote Sensing},
+  title   = {Symmetric Fusion and Reliability-Aware Supervision
+             for Long-Tailed {RGB--IR} Remote-Sensing Detection},
   author  = {Chen, Yi and Deng, Lingjun and Zhong, Chuen-Ho and Liu, Chang and Dong, Yanni},
   journal = {IEEE Journal of Selected Topics in Applied Earth Observations
              and Remote Sensing},
