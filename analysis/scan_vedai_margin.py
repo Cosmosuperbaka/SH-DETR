@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Threshold-sensitivity scan for a SH-DETR-only detection on VEDAI fold01.
+"""Threshold-sensitivity scan for a RSC-DETR-only detection on VEDAI fold01.
 
 For every GT target in every scene we compute the highest-confidence detection
 with which each method matches that target (category match + IoU >= 0.5).
-A target is a *margin candidate* when SH-DETR's matching score strictly
+A target is a *margin candidate* when RSC-DETR's matching score strictly
 exceeds every other method's score. Choosing a score threshold inside the gap
-then makes the target a genuine SH-DETR-only detection (yellow box) without
+then makes the target a genuine RSC-DETR-only detection (yellow box) without
 touching any detection output.
 
-We rank candidates by margin = shdetr_score - second_best, preferring high SH-DETR
+We rank candidates by margin = rscdetr_score - second_best, preferring high RSC-DETR
 confidence so the yellow box is a confident detection.
 """
 
@@ -20,10 +20,10 @@ from pathlib import Path
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
 
 
 GT_PATH = DATASETS / "VEDAI/annotations/vedai_fold01_test_class8.json"
@@ -37,7 +37,7 @@ JSON_SOURCES = {
     "C2DFF-Net": (ROOT / "compare/C2DFF_VEDAI/runs/c2dff_s3407_uuid2_valbest_test_20260802/predictions.json", 1),
     "RT-DETR RGB": (ROOT / "outputs/vedai_direct_test_unified/rgb/seed_3407/predictions.json", 0),
     "RT-DETR concat": (ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json", 0),
-    "SH-DETR": (ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json", 0),
+    "RSC-DETR": (ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json", 0),
 }
 YOLO_SOURCES = {
     "YOLOv11-RGBT": ROOT / "compare/YOLOv11_RGBT/runs/yolov11_rgbt_vedai_s3407_uuid2_valbest_test_20260802/labels",
@@ -142,26 +142,26 @@ def main():
     for img_id, gts in sorted(gt_by_img.items()):
         for ti, gt in enumerate(gts):
             scores = {n: best_match_score(methods[n].get(img_id, []), gt) for n in METHOD_ORDER}
-            shdetr = scores["SH-DETR"]
-            if shdetr <= 0.5:
+            rscdetr = scores["RSC-DETR"]
+            if rscdetr <= 0.5:
                 continue
-            others = {n: s for n, s in scores.items() if n != "SH-DETR"}
+            others = {n: s for n, s in scores.items() if n != "RSC-DETR"}
             second = max(others.values())
-            if second >= shdetr:
+            if second >= rscdetr:
                 continue
-            margin = shdetr - second
+            margin = rscdetr - second
             cands.append({
                 "img": img_id, "ti": ti, "cat": CLASS8.get(gt["cat"], str(gt["cat"])),
                 "xyxy": tuple(round(v, 1) for v in gt["xyxy"]),
-                "shdetr": round(shdetr, 3), "second": round(second, 3), "margin": round(margin, 3),
+                "rscdetr": round(rscdetr, 3), "second": round(second, 3), "margin": round(margin, 3),
                 "who_second": [n for n, s in others.items() if s == second],
                 "scores": {n: round(s, 3) for n, s in scores.items()},
             })
 
-    cands.sort(key=lambda c: (-c["margin"], -c["shdetr"]))
-    print(f"\ncandidates where SH-DETR strictly beats every other method: {len(cands)}")
+    cands.sort(key=lambda c: (-c["margin"], -c["rscdetr"]))
+    print(f"\ncandidates where RSC-DETR strictly beats every other method: {len(cands)}")
     for c in cands[:25]:
-        print(f"img={c['img']:>6} cat={c['cat']:<11} xyxy={c['xyxy']} shdetr={c['shdetr']} "
+        print(f"img={c['img']:>6} cat={c['cat']:<11} xyxy={c['xyxy']} rscdetr={c['rscdetr']} "
               f"second={c['second']} ({c['who_second'][0]}) margin={c['margin']}")
         print(f"    scores={c['scores']}")
 

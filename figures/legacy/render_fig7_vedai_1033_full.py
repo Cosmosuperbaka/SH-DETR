@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Regenerate the VEDAI 2x4 qualitative comparison for scene 1033 with RGB+IR
-stacked panels and a genuine SH-DETR-only high-confidence detection.
+stacked panels and a genuine RSC-DETR-only high-confidence detection.
 
 * each method panel shows the RGB view (top) and the infrared view (bottom)
   of VEDAI scene 00001033, so the multimodal input is explicit;
 * detection/matching threshold is 0.70; the tractor target at (377,734,425,778)
-  is the only target for which SH-DETR outputs a high-confidence detection
+  is the only target for which RSC-DETR outputs a high-confidence detection
   (0.803 vs 0.69/0.67/0.61/0.41/0.39 for the next best), so it is drawn in
-  yellow as the SH-DETR-only detection;
+  yellow as the RSC-DETR-only detection;
 * text is set in Nimbus Roman (Times-metric compatible) instead of DejaVu.
 """
 
@@ -26,10 +26,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, PAPER  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET, PAPER  # noqa: E402
 IMAGE_ID = 1033
 IMAGE_KEY = "00001033_co"
 IMAGE_PATH = DATASETS / "VEDAI/Vehicules1024/00001033_co.png"
@@ -45,7 +45,7 @@ METHOD_ORDER = (
     "RSVDet",
     "YOLOv11-RGBT",
     "LCAFNet",
-    "SH-DETR",
+    "RSC-DETR",
 )
 
 SCORE_THRESHOLD = 0.70
@@ -94,7 +94,7 @@ JSON_SOURCES = {
         ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json",
         0,
     ),
-    "SH-DETR": (
+    "RSC-DETR": (
         ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json",
         0,
     ),
@@ -270,7 +270,7 @@ def box_iou(left: Sequence[float], right: Sequence[float]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def shdetr_color(
+def rscdetr_color(
     detection: Detection,
     ground_truth: Iterable[Detection],
     other_methods: Iterable[Detection],
@@ -374,8 +374,8 @@ def main() -> None:
     font_title = load_font(28)
     font_label = load_font(22)
 
-    def color_for_shdetr(detection: Detection) -> tuple[int, int, int]:
-        return shdetr_color(detection, ground_truth, other_methods)
+    def color_for_rscdetr(detection: Detection) -> tuple[int, int, int]:
+        return rscdetr_color(detection, ground_truth, other_methods)
 
     def color_red(_: Detection) -> tuple[int, int, int]:
         return RED
@@ -384,7 +384,7 @@ def main() -> None:
         row, column = divmod(index, 4)
         panel_left = CANVAS_MARGIN + column * (MODALITY_SIZE + COLUMN_GAP)
         image_top = CANVAS_MARGIN + row * (panel_height + ROW_GAP)
-        color_for = color_for_shdetr if name == "SH-DETR" else color_red
+        color_for = color_for_rscdetr if name == "RSC-DETR" else color_red
 
         # RGB thumbnail
         rgb_panel = source.resize((MODALITY_SIZE, MODALITY_SIZE), Image.Resampling.LANCZOS)
@@ -404,19 +404,19 @@ def main() -> None:
         title_y = image_top + TITLE_BAND - TITLE_GAP - (text_box[3] - text_box[1]) - text_box[1]
         canvas_draw.text((title_x, title_y), name, fill=TEXT, font=font_title)
 
-    # arrow on the SH-DETR panel: the SH-DETR-only high-confidence tractor at (377,734)-(425,778)
-    shdetr_panel_left = CANVAS_MARGIN + 3 * (MODALITY_SIZE + COLUMN_GAP)
-    shdetr_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)  # second row
+    # arrow on the RSC-DETR panel: the RSC-DETR-only high-confidence tractor at (377,734)-(425,778)
+    rscdetr_panel_left = CANVAS_MARGIN + 3 * (MODALITY_SIZE + COLUMN_GAP)
+    rscdetr_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)  # second row
     target = (377 + 425) / 2.0, (734 + 778) / 2.0
     end = (
-        shdetr_panel_left + target[0] * scale_x,
-        shdetr_image_top + TITLE_BAND + target[1] * scale_y,
+        rscdetr_panel_left + target[0] * scale_x,
+        rscdetr_image_top + TITLE_BAND + target[1] * scale_y,
     )
-    note = "Arrow: the tractor target detected with high confidence only by SH-DETR."
+    note = "Arrow: the tractor target detected with high confidence only by RSC-DETR."
 
-    # legend: red = detection, yellow = SH-DETR-only true positive
+    # legend: red = detection, yellow = RSC-DETR-only true positive
     legend_top = canvas_height - ARROW_NOTE_BAND + 14
-    entries = ((RED, "Detection"), (YELLOW, "SH-DETR-only true positive"))
+    entries = ((RED, "Detection"), (YELLOW, "RSC-DETR-only true positive"))
     legend_x = CANVAS_MARGIN + 8
     for color, label in entries:
         canvas_draw.rectangle([legend_x, legend_top, legend_x + 20, legend_top + 16],
@@ -447,8 +447,8 @@ def main() -> None:
     print(f"canvas={canvas_width}x{canvas_height} image={IMAGE_KEY} thr={SCORE_THRESHOLD}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    yellow = [d for d in methods["SH-DETR"] if color_for_shdetr(d) == YELLOW]
-    print(f"shdetr_unique(yellow)={len(yellow)}")
+    yellow = [d for d in methods["RSC-DETR"] if color_for_rscdetr(d) == YELLOW]
+    print(f"rscdetr_unique(yellow)={len(yellow)}")
     for d in yellow:
         print(f"  yellow xyxy={tuple(round(v,1) for v in d.xyxy)} cat={d.category_id} score={d.score:.3f}")
 

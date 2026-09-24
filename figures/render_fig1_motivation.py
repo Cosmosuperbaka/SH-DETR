@@ -3,7 +3,7 @@
 
 Data provenance (all reproducible on the experiment server):
 
-    ~/sh-detr/infer_scene000004_single_modality.py
+    ~/rsc-detr/infer_scene000004_single_modality.py
 
 runs the *same* naive concat-merged RT-DETR baseline (fold03 checkpoint) three
 times, zeroing one branch at a time:
@@ -27,10 +27,10 @@ from PIL import Image, ImageDraw, ImageFont
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import DATASETS, ROOT  # noqa: E402
+from rscdetr_paths import DATASETS, ROOT  # noqa: E402
 
 IMAGE_ID = 4
 RGB_PATH = DATASETS / "VEDAI/Vehicules1024/00000004_co.png"

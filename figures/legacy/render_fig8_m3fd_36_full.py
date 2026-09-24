@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Render the M3FD-LT20 2x4 qualitative comparison (Fig8) for scene 36 (00400.png)
-with RGB+IR stacked panels and a genuine SH-DETR-only true positive.
+with RGB+IR stacked panels and a genuine RSC-DETR-only true positive.
 
 * each method panel shows the visible (vi) view (top) and the infrared (ir) view
   (bottom) of M3FD scene 00400, making the multimodal input explicit;
 * detection/matching threshold is 0.50; the car target at (284,432,345,479) is a
-  NATURAL SH-DETR-only true positive: SH-DETR matches it at score 0.889 while every
+  NATURAL RSC-DETR-only true positive: RSC-DETR matches it at score 0.889 while every
   other method has zero matching detection (best_match_score = 0 for all 7 others),
   so it is drawn in yellow without any threshold adjustment;
-* red = correct detection, cyan = false positive, yellow = SH-DETR-only true positive
+* red = correct detection, cyan = false positive, yellow = RSC-DETR-only true positive
   (matching the qualitative-figure legend used across the paper);
 * text is set in Nimbus Roman (Times-metric compatible).
 """
@@ -27,10 +27,10 @@ from PIL import Image, ImageDraw, ImageFont
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD, PAPER  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD, PAPER  # noqa: E402
 IMAGE_ID = 36
 IMAGE_KEY = "00400"
 IMAGE_PATH = DATASETS / "M3FD/raw/vi/00400.png"
@@ -48,7 +48,7 @@ METHOD_ORDER = (
     "YOLOv11-RGBT",
     "LCAFNet",
     "CLDyN+RT-DETR",
-    "SH-DETR",
+    "RSC-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -85,7 +85,7 @@ JSON_SOURCES = {
     "RT-DETR RGB": ROOT / "compare/M3FD-LT20/original-size-45e-trial/rtdetr-rgb-seed42-native-b8-45e/valbest_test_coco/predictions.json",
     "RT-DETR concat": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/baseline/predictions.json",
     "CLDyN+RT-DETR": ROOT / "compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/cldyn-vfn-rtdetr-1/val_best_test_full_20260906/predictions.json",
-    "SH-DETR": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
+    "RSC-DETR": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
 }
 
 YOLO_SOURCES = {
@@ -258,16 +258,16 @@ def main() -> None:
     assert set(methods) == set(METHOD_ORDER)
 
     matches = {name: match_detections(methods[name], ground_truth) for name in METHOD_ORDER}
-    shdetr_targets = set(matches["SH-DETR"].values())
-    other_targets = {t for name in METHOD_ORDER if name != "SH-DETR" for t in matches[name].values()}
-    shdetr_unique_targets = shdetr_targets - other_targets
+    rscdetr_targets = set(matches["RSC-DETR"].values())
+    other_targets = {t for name in METHOD_ORDER if name != "RSC-DETR" for t in matches[name].values()}
+    rscdetr_unique_targets = rscdetr_targets - other_targets
 
     def color_for(method: str):
         def _color(detection_index: int):
             target = matches[method].get(detection_index)
             if target is None:
                 return CYAN
-            if method == "SH-DETR" and target in shdetr_unique_targets:
+            if method == "RSC-DETR" and target in rscdetr_unique_targets:
                 return YELLOW
             return RED
         return _color
@@ -303,13 +303,13 @@ def main() -> None:
         title_y = image_top + TITLE_BAND - TITLE_GAP - (text_box[3] - text_box[1]) - text_box[1]
         canvas_draw.text((title_x, title_y), name, fill=TEXT, font=font_title)
 
-    # arrow -> the SH-DETR-only car at (284,432,345,479) in the SH-DETR RGB thumbnail
-    shdetr_panel_left = CANVAS_MARGIN + 3 * (MODALITY_WIDTH + COLUMN_GAP)
-    shdetr_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)
+    # arrow -> the RSC-DETR-only car at (284,432,345,479) in the RSC-DETR RGB thumbnail
+    rscdetr_panel_left = CANVAS_MARGIN + 3 * (MODALITY_WIDTH + COLUMN_GAP)
+    rscdetr_image_top = CANVAS_MARGIN + (panel_height + ROW_GAP)
     target = (284 + 345) / 2.0, (432 + 479) / 2.0
     end = (
-        shdetr_panel_left + target[0] * scale_x,
-        shdetr_image_top + TITLE_BAND + target[1] * scale_y,
+        rscdetr_panel_left + target[0] * scale_x,
+        rscdetr_image_top + TITLE_BAND + target[1] * scale_y,
     )
     start = (end[0], end[1] + 36)
     canvas_draw = ImageDraw.Draw(canvas)
@@ -324,7 +324,7 @@ def main() -> None:
     entries = (
         (RED, "Correct detection"),
         (CYAN, "False positive"),
-        (YELLOW, "SH-DETR-only true positive"),
+        (YELLOW, "RSC-DETR-only true positive"),
     )
     swatch, gap = 18, 32
     widths = []
@@ -342,7 +342,7 @@ def main() -> None:
                          label, fill=TEXT, font=font_label)
         legend_x += width + gap
 
-    note = "Arrow: the car target detected by SH-DETR but missed by all other methods."
+    note = "Arrow: the car target detected by RSC-DETR but missed by all other methods."
     text_box = canvas_draw.textbbox((0, 0), note, font=font_label)
     note_x = (canvas_width - (text_box[2] - text_box[0])) / 2
     note_y = legend_top + 46
@@ -355,10 +355,10 @@ def main() -> None:
     print(f"canvas={canvas_width}x{canvas_height} image={IMAGE_KEY} thr={SCORE_THRESHOLD}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    yellow = [i for i in matches["SH-DETR"] if matches["SH-DETR"][i] in shdetr_unique_targets]
-    print(f"shdetr_unique(yellow)={len(yellow)}")
+    yellow = [i for i in matches["RSC-DETR"] if matches["RSC-DETR"][i] in rscdetr_unique_targets]
+    print(f"rscdetr_unique(yellow)={len(yellow)}")
     for i in yellow:
-        d = methods["SH-DETR"][i]
+        d = methods["RSC-DETR"][i]
         print(f"  yellow xyxy={tuple(round(v,1) for v in d.xyxy)} cat={d.category_id} score={d.score:.3f}")
 
 

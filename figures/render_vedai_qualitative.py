@@ -25,10 +25,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
 
 
 IMAGE_ID = 1033
@@ -49,7 +49,7 @@ METHOD_ORDER = (
     "RSVDet",
     "YOLOv11-RGBT",
     "LCAFNet",
-    "SH-DETR",
+    "RSC-DETR",
 )
 
 SCORE_THRESHOLD = 0.70
@@ -116,7 +116,7 @@ JSON_SOURCES = {
         ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json",
         0,
     ),
-    "SH-DETR": (
+    "RSC-DETR": (
         ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json",
         0,
     ),
@@ -254,7 +254,7 @@ def box_iou(left, right) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def shdetr_color(detection, ground_truth, other_methods):
+def rscdetr_color(detection, ground_truth, other_methods):
     matching_gt = [
         target for target in ground_truth
         if target.category_id == detection.category_id and box_iou(target.xyxy, detection.xyxy) >= MATCH_IOU
@@ -385,8 +385,8 @@ def main() -> None:
     font_title = load_font(24 * SCALE)
     font_label = load_font(20 * SCALE)
 
-    def color_for_shdetr(detection: Detection):
-        return shdetr_color(detection, ground_truth, other_methods)
+    def color_for_rscdetr(detection: Detection):
+        return rscdetr_color(detection, ground_truth, other_methods)
 
     def color_red(_: Detection):
         return RED
@@ -395,7 +395,7 @@ def main() -> None:
         row, column = divmod(index, 4)
         panel_left = CANVAS_MARGIN + column * (MODALITY_SIZE + COLUMN_GAP)
         image_top = CANVAS_MARGIN + row * (panel_height + ROW_GAP)
-        color_for = color_for_shdetr if name == "SH-DETR" else color_red
+        color_for = color_for_rscdetr if name == "RSC-DETR" else color_red
 
         for offset, src in (
             (TITLE_BAND, source),
@@ -415,7 +415,7 @@ def main() -> None:
 
     canvas_draw = ImageDraw.Draw(canvas)
     legend_top = canvas_height - LEGEND_BAND + 22 * SCALE
-    entries = ((RED, "Detection"), (GREEN, "Ground truth"), (YELLOW, "SH-DETR-only true positive"))
+    entries = ((RED, "Detection"), (GREEN, "Ground truth"), (YELLOW, "RSC-DETR-only true positive"))
     swatch = 24 * SCALE
     gap = 40 * SCALE
     widths = []
@@ -443,8 +443,8 @@ def main() -> None:
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
     print(f"gt={len(ground_truth)}")
-    yellow = [d for d in methods["SH-DETR"] if color_for_shdetr(d) == YELLOW]
-    print(f"shdetr_unique(yellow)={len(yellow)}")
+    yellow = [d for d in methods["RSC-DETR"] if color_for_rscdetr(d) == YELLOW]
+    print(f"rscdetr_unique(yellow)={len(yellow)}")
 
 
 if __name__ == "__main__":

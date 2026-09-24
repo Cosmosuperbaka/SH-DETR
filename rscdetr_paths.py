@@ -1,4 +1,4 @@
-"""Central path configuration for the SH-DETR code base.
+"""Central path configuration for the RSC-DETR code base.
 
 Historically every script hard-coded absolute paths pointing at one person's
 home directory on the experiment server. Those paths are resolved here instead,
@@ -7,32 +7,32 @@ so the repository can be relocated or shared without editing nineteen files.
 Resolution order for every entry:
 
 1. the corresponding environment variable, if it is set to a non-empty value;
-2. otherwise a default derived from ``SHDETR_WORKSPACE`` -- which itself
+2. otherwise a default derived from ``RSCDETR_WORKSPACE`` -- which itself
    defaults to the current user's home directory.
 
 Environment variables
 ---------------------
 
 ==========================  ================================================
-``SHDETR_WORKSPACE``        Root that holds all experiment trees.
+``RSCDETR_WORKSPACE``        Root that holds all experiment trees.
                             Default: the current user's home directory.
-``SHDETR_ROOT``             Main SH-DETR working repository.
-                            Default: ``$SHDETR_WORKSPACE/sh-detr``
-``SHDETR_DATASETS``         Dataset root containing ``VEDAI/`` and ``M3FD/``.
-                            Default: ``$SHDETR_WORKSPACE/vedai_data/datasets``
-``SHDETR_CFT``              CFT comparison checkout.
-                            Default: ``$SHDETR_WORKSPACE/CFT``
-``SHDETR_LCAFNET``          LCAFNet comparison checkout.
-                            Default: ``$SHDETR_WORKSPACE/LCAFNet``
-``SHDETR_MSOD``             Multispectral-object-detection checkout.
-                            Default: ``$SHDETR_WORKSPACE/multispectral-object-detection``
-``SHDETR_PAPER``            Unpacked paper sources (default figure target).
-                            Default: ``$SHDETR_ROOT/SH_DETR``
-``SHDETR_OUT_QUAL``         Output root for qualitative figures.
-                            Default: ``$SHDETR_ROOT/out_qual``
+``RSCDETR_ROOT``             Main RSC-DETR working repository.
+                            Default: ``$RSCDETR_WORKSPACE/rsc-detr``
+``RSCDETR_DATASETS``         Dataset root containing ``VEDAI/`` and ``M3FD/``.
+                            Default: ``$RSCDETR_WORKSPACE/vedai_data/datasets``
+``RSCDETR_CFT``              CFT comparison checkout.
+                            Default: ``$RSCDETR_WORKSPACE/CFT``
+``RSCDETR_LCAFNET``          LCAFNet comparison checkout.
+                            Default: ``$RSCDETR_WORKSPACE/LCAFNet``
+``RSCDETR_MSOD``             Multispectral-object-detection checkout.
+                            Default: ``$RSCDETR_WORKSPACE/multispectral-object-detection``
+``RSCDETR_PAPER``            Unpacked paper sources (default figure target).
+                            Default: ``$RSCDETR_ROOT/RSC_DETR``
+``RSCDETR_OUT_QUAL``         Output root for qualitative figures.
+                            Default: ``$RSCDETR_ROOT/out_qual``
 ==========================  ================================================
 
-Run ``python3 shdetr_paths.py`` to print every path that would be used.
+Run ``python3 rscdetr_paths.py`` to print every path that would be used.
 
 Usage from a script anywhere in the tree::
 
@@ -40,10 +40,10 @@ Usage from a script anywhere in the tree::
     from pathlib import Path
 
     for _parent in Path(__file__).resolve().parents:
-        if (_parent / "shdetr_paths.py").is_file():
+        if (_parent / "rscdetr_paths.py").is_file():
             sys.path.insert(0, str(_parent))
             break
-    from shdetr_paths import ROOT, DATASETS
+    from rscdetr_paths import ROOT, DATASETS
 """
 
 from __future__ import annotations
@@ -77,13 +77,13 @@ def _env_path(name: str, default: Path | str) -> Path:
 # --------------------------------------------------------------------------
 # workspace and main repository
 # --------------------------------------------------------------------------
-WORKSPACE = _env_path("SHDETR_WORKSPACE", Path.home())
-ROOT = _env_path("SHDETR_ROOT", WORKSPACE / "sh-detr")
+WORKSPACE = _env_path("RSCDETR_WORKSPACE", Path.home())
+ROOT = _env_path("RSCDETR_ROOT", WORKSPACE / "rsc-detr")
 
 # --------------------------------------------------------------------------
 # datasets
 # --------------------------------------------------------------------------
-DATASETS = _env_path("SHDETR_DATASETS", WORKSPACE / "vedai_data" / "datasets")
+DATASETS = _env_path("RSCDETR_DATASETS", WORKSPACE / "vedai_data" / "datasets")
 VEDAI = DATASETS / "VEDAI"
 M3FD = DATASETS / "M3FD"
 
@@ -94,25 +94,25 @@ DVTOD_COMPARE = ROOT / "compare" / "DVTOD_compare_20260910"
 # --------------------------------------------------------------------------
 # comparison-method checkouts
 # --------------------------------------------------------------------------
-CFT = _env_path("SHDETR_CFT", WORKSPACE / "CFT")
-LCAFNET = _env_path("SHDETR_LCAFNET", WORKSPACE / "LCAFNet")
-MSOD = _env_path("SHDETR_MSOD", WORKSPACE / "multispectral-object-detection")
+CFT = _env_path("RSCDETR_CFT", WORKSPACE / "CFT")
+LCAFNET = _env_path("RSCDETR_LCAFNET", WORKSPACE / "LCAFNet")
+MSOD = _env_path("RSCDETR_MSOD", WORKSPACE / "multispectral-object-detection")
 
 # --------------------------------------------------------------------------
 # paper sources and figure output
 # --------------------------------------------------------------------------
-PAPER = _env_path("SHDETR_PAPER", ROOT / "SH_DETR")
-OUT_QUAL = _env_path("SHDETR_OUT_QUAL", ROOT / "out_qual")
+PAPER = _env_path("RSCDETR_PAPER", ROOT / "RSC_DETR")
+OUT_QUAL = _env_path("RSCDETR_OUT_QUAL", ROOT / "out_qual")
 
 _ENV_VARS = {
-    "WORKSPACE": "SHDETR_WORKSPACE",
-    "ROOT": "SHDETR_ROOT",
-    "DATASETS": "SHDETR_DATASETS",
-    "CFT": "SHDETR_CFT",
-    "LCAFNET": "SHDETR_LCAFNET",
-    "MSOD": "SHDETR_MSOD",
-    "PAPER": "SHDETR_PAPER",
-    "OUT_QUAL": "SHDETR_OUT_QUAL",
+    "WORKSPACE": "RSCDETR_WORKSPACE",
+    "ROOT": "RSCDETR_ROOT",
+    "DATASETS": "RSCDETR_DATASETS",
+    "CFT": "RSCDETR_CFT",
+    "LCAFNET": "RSCDETR_LCAFNET",
+    "MSOD": "RSCDETR_MSOD",
+    "PAPER": "RSCDETR_PAPER",
+    "OUT_QUAL": "RSCDETR_OUT_QUAL",
 }
 
 

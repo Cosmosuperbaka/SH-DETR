@@ -4,7 +4,7 @@
 Same visual language as the VEDAI / M3FD-LT20 qualitative figures already in
 the paper: one panel per method, visible (RGB) on top and infrared (IR) below,
 red boxes for correct detections, blue for false detections, and a yellow box
-for a true positive that only SH-DETR recovers.  Nimbus Roman text and the same
+for a true positive that only RSC-DETR recovers.  Nimbus Roman text and the same
 panel geometry.
 
 Two id conventions have to be reconciled: the RT-DETR family writes the
@@ -29,10 +29,10 @@ from PIL import Image, ImageDraw, ImageFont
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT  # noqa: E402
+from rscdetr_paths import ROOT  # noqa: E402
 
 
 B = ROOT / "compare/DVTOD_compare_20260910"
@@ -50,9 +50,9 @@ PANELS = (
     ("C2DFF-Net",      B / "runs/c2dff_eval/c2dff_final/predictions.json"),
     ("DARFNet",        B / "runs/darfnet_eval/darfnet_final/best_predictions.json"),
     ("CMFADet",        B / "runs/cmfadet_eval/cmfadet_100e/predictions.json"),
-    ("SH-DETR",        ROOT / "result/RTDOD_HBB_3class/perclass_sh_c2_best/predictions.json"),
+    ("RSC-DETR",        ROOT / "result/RTDOD_HBB_3class/perclass_sh_c2_best/predictions.json"),
 )
-OURS = "SH-DETR"
+OURS = "RSC-DETR"
 
 CLASS_NAMES = {0: "Person", 1: "Car", 2: "Bicycle"}
 
@@ -224,7 +224,7 @@ def draw_detections(draw, detections, gt, others, label_font,
 def draw_legend(canvas, top, font):
     draw = ImageDraw.Draw(canvas)
     entries = ((RED, "Correct detection"), (BLUE, "False detection"),
-               (YELLOW, "SH-DETR-only true positive"))
+               (YELLOW, "RSC-DETR-only true positive"))
     swatch, gap = 18, 28
     widths = []
     for _, label in entries:

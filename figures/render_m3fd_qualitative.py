@@ -22,10 +22,10 @@ from PIL import Image, ImageDraw, ImageFont
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
 
 
 IMAGE_ID = 36
@@ -46,7 +46,7 @@ METHOD_ORDER = (
     "YOLOv11-RGBT",
     "LCAFNet",
     "CLDyN+RT-DETR",
-    "SH-DETR",
+    "RSC-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -100,7 +100,7 @@ JSON_SOURCES = {
         "cldyn-vfn-rtdetr-1/val_best_test_full_20260906/predictions.json",
         0,
     ),
-    "SH-DETR": (
+    "RSC-DETR": (
         ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
         0,
     ),
@@ -121,7 +121,7 @@ YOLO_SOURCES = {
     ),
 }
 
-OURS = "SH-DETR"
+OURS = "RSC-DETR"
 
 
 def coco_xywh_to_xyxy(box):
@@ -276,7 +276,7 @@ def draw_detections(draw, detections, scale_x, scale_y, panel_w, panel_h, is_our
 def draw_legend(canvas, top, font) -> None:
     draw = ImageDraw.Draw(canvas)
     entries = ((RED, "Correct detection"), (BLUE, "False detection"),
-               (GREEN, "Ground truth"), (YELLOW, "SH-DETR-only true positive"))
+               (GREEN, "Ground truth"), (YELLOW, "RSC-DETR-only true positive"))
     swatch = 18 * SCALE
     gap = 28 * SCALE
     widths = []

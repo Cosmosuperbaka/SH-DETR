@@ -4,8 +4,8 @@
 Same rework as Fig7: each method panel is CROPPED to a square window around the
 scene's central targets (image 1024x768 -> 260x260 crop centred on (315,470)),
 making the targets large and legible. Detection boxes are mapped from image to
-crop coordinates; the SH-DETR-only People target (GT cat=1 at (284,431,345,478),
-matched by SH-DETR at 0.889) keeps its yellow box.
+crop coordinates; the RSC-DETR-only People target (GT cat=1 at (284,431,345,478),
+matched by RSC-DETR at 0.889) keeps its yellow box.
 """
 
 from __future__ import annotations
@@ -22,10 +22,10 @@ from PIL import Image, ImageDraw, ImageFont
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD  # noqa: E402
 
 
 IMAGE_ID = 36
@@ -35,7 +35,7 @@ IR_IMAGE_PATH = DATASETS / "M3FD/raw/ir/00400.png"
 GT_PATH = Path(
     f"{DATASETS}/M3FD/processed/lt20_seed42/annotations/instances_test.json"
 )
-OUTPUT_PATH = ROOT / "SH_DETR/figures/qualitative_m3fd_rgb_ir_36_2x4.png"
+OUTPUT_PATH = ROOT / "RSC_DETR/figures/qualitative_m3fd_rgb_ir_36_2x4.png"
 
 # Crop window (image coords): 260x260 centred on (315,470), covering the People
 # target (284,431,345,478) and the surrounding cars/people.
@@ -50,7 +50,7 @@ METHOD_ORDER = (
     "YOLOv11-RGBT",
     "LCAFNet",
     "CLDyN+RT-DETR",
-    "SH-DETR",
+    "RSC-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -84,7 +84,7 @@ JSON_SOURCES = {
     "RT-DETR RGB": ROOT / "compare/M3FD-LT20/original-size-45e-trial/rtdetr-rgb-seed42-native-b8-45e/valbest_test_coco/predictions.json",
     "RT-DETR concat": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/baseline/predictions.json",
     "CLDyN+RT-DETR": ROOT / "compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/cldyn-vfn-rtdetr-1/val_best_test_per_class/predictions.json",
-    "SH-DETR": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
+    "RSC-DETR": ROOT / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json",
 }
 
 YOLO_SOURCES = {
@@ -261,16 +261,16 @@ def main() -> None:
     assert set(methods) == set(METHOD_ORDER)
 
     matches = {name: match_detections(methods[name], ground_truth) for name in METHOD_ORDER}
-    shdetr_targets = set(matches["SH-DETR"].values())
-    other_targets = {t for name in METHOD_ORDER if name != "SH-DETR" for t in matches[name].values()}
-    shdetr_unique_targets = shdetr_targets - other_targets
+    rscdetr_targets = set(matches["RSC-DETR"].values())
+    other_targets = {t for name in METHOD_ORDER if name != "RSC-DETR" for t in matches[name].values()}
+    rscdetr_unique_targets = rscdetr_targets - other_targets
 
     def color_for(method: str):
         def _color(detection_index: int):
             target = matches[method].get(detection_index)
             if target is None:
                 return CYAN
-            if method == "SH-DETR" and target in shdetr_unique_targets:
+            if method == "RSC-DETR" and target in rscdetr_unique_targets:
                 return YELLOW
             return RED
         return _color
@@ -312,7 +312,7 @@ def main() -> None:
     entries = (
         (RED, "Correct detection"),
         (CYAN, "False positive"),
-        (YELLOW, "SH-DETR-only true positive"),
+        (YELLOW, "RSC-DETR-only true positive"),
     )
     swatch, gap = 18, 30
     widths = []
@@ -337,10 +337,10 @@ def main() -> None:
     print(f"canvas={canvas_width}x{canvas_height} crop={CROP} thr={SCORE_THRESHOLD}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    yellow = [i for i in matches["SH-DETR"] if matches["SH-DETR"][i] in shdetr_unique_targets]
-    print(f"shdetr_unique(yellow)={len(yellow)}")
+    yellow = [i for i in matches["RSC-DETR"] if matches["RSC-DETR"][i] in rscdetr_unique_targets]
+    print(f"rscdetr_unique(yellow)={len(yellow)}")
     for i in yellow:
-        d = methods["SH-DETR"][i]
+        d = methods["RSC-DETR"][i]
         print(f"  yellow xyxy={tuple(round(v,1) for v in d.xyxy)} cat={d.category_id} score={d.score:.3f}")
 
 

@@ -1,21 +1,21 @@
 # Data, checkpoint and prediction paths
 
 Every script in this repository resolves its input paths through
-[`shdetr_paths.py`](../shdetr_paths.py) — nothing is hard-coded to a particular
+[`rscdetr_paths.py`](../rscdetr_paths.py) — nothing is hard-coded to a particular
 machine or user. This file documents which file feeds which panel of each figure
 so the setup can be rebuilt elsewhere.
 
 Notation used below:
 
-* `ROOT` — main SH-DETR working repository (`$SHDETR_ROOT`, default
-  `$SHDETR_WORKSPACE/sh-detr`)
-* `DATASETS` — dataset root (`$SHDETR_DATASETS`, default
-  `$SHDETR_WORKSPACE/vedai_data/datasets`)
+* `ROOT` — main RSC-DETR working repository (`$RSCDETR_ROOT`, default
+  `$RSCDETR_WORKSPACE/rsc-detr`)
+* `DATASETS` — dataset root (`$RSCDETR_DATASETS`, default
+  `$RSCDETR_WORKSPACE/vedai_data/datasets`)
 * `CFT` / `LCAFNET` / `MSOD` — comparison-method checkouts; see
-  [`shdetr_paths.py`](../shdetr_paths.py) for their defaults
+  [`rscdetr_paths.py`](../rscdetr_paths.py) for their defaults
 * `B` — `ROOT/compare/DVTOD_compare_20260910`
 
-Run `python3 shdetr_paths.py` to print the values actually in effect.
+Run `python3 rscdetr_paths.py` to print the values actually in effect.
 All `predictions.json` files are COCO-format detection dumps; YOLO-family runs
 additionally ship the usual `labels/*.txt` with six whitespace-separated fields
 (`class cx cy w h score`, all normalised).
@@ -39,7 +39,7 @@ additionally ship the usual `labels/*.txt` with six whitespace-separated fields
 | RSVDet | `ROOT/outputs/compare_vedai_icafusion_rsvdet/rsvdet/eval_best/predictions.json` |
 | YOLOv11-RGBT | `ROOT/compare/YOLOv11_RGBT/runs/yolov11_rgbt_vedai_s3407_uuid2_valbest_test_20260802/labels/00001033_co.txt` |
 | LCAFNet | `LCAFNET/runs/VEDAI/lcafnet_s3407_uuid_valbest_test_20260802/labels/00001033_co.txt` |
-| SH-DETR | `ROOT/outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json` |
+| RSC-DETR | `ROOT/outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json` |
 
 Thresholds: score ≥ 0.70, match IoU ≥ 0.50. The renderer crops the window
 `(348, 637, 648, 937)` around the three ground-truth targets.
@@ -63,7 +63,7 @@ Thresholds: score ≥ 0.70, match IoU ≥ 0.50. The renderer crops the window
 | YOLOv11-RGBT | `ROOT/compare/rerun_m3fd_s42_protocol_20260802/YOLOv11_RGBT_best_test_s42_img1024_b8/labels/00400.txt` |
 | LCAFNet | `LCAFNET/runs/M3FD-LT20/lcafnet_s42_b4_1024_plus100_uuid4_valbest_test_20260802/labels/00400.txt` |
 | CLDyN+RT-DETR | `ROOT/compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/cldyn-vfn-rtdetr-1/val_best_test_full_20260906/predictions.json` |
-| SH-DETR | `ROOT/outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json` |
+| RSC-DETR | `ROOT/outputs/m3fd_lt20_s42_b8_valbest_test_requested/v19c_spsf/predictions.json` |
 
 Thresholds: score ≥ 0.50, match IoU ≥ 0.50. Images are `1024 × 768`.
 
@@ -86,7 +86,7 @@ Thresholds: score ≥ 0.50, match IoU ≥ 0.50. Images are `1024 × 768`.
 | C2DFF-Net | `B/runs/c2dff_eval/c2dff_final/predictions.json` |
 | DARFNet | `B/runs/darfnet_eval/darfnet_final/best_predictions.json` |
 | CMFADet | `B/runs/cmfadet_eval/cmfadet_100e/predictions.json` |
-| SH-DETR | `ROOT/result/RTDOD_HBB_3class/perclass_sh_c2_best/predictions.json` |
+| RSC-DETR | `ROOT/result/RTDOD_HBB_3class/perclass_sh_c2_best/predictions.json` |
 
 Thresholds: score ≥ 0.50, match IoU ≥ 0.50. Classes are
 `{0: Person, 1: Car, 2: Bicycle}`.

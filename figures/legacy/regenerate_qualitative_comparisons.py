@@ -17,10 +17,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD, PAPER  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET, MSOD, PAPER  # noqa: E402
 PAPER_ROOT = PAPER
 
 SCORE_THRESHOLD = 0.50
@@ -97,8 +97,8 @@ class CandidateMetrics:
     image_id: int
     file_name: str
     gt_count: int
-    shdetr_tp: int
-    shdetr_fp: int
+    rscdetr_tp: int
+    rscdetr_fp: int
     unique_targets: tuple[int, ...]
     visible_unique: int
     visible_size_sum: float
@@ -110,8 +110,8 @@ class CandidateMetrics:
             float(self.visible_unique),
             float(len(self.unique_targets)),
             self.visible_size_sum,
-            float(self.shdetr_tp),
-            float(-self.shdetr_fp),
+            float(self.rscdetr_tp),
+            float(-self.rscdetr_fp),
             float(self.other_fp),
         )
 
@@ -131,7 +131,7 @@ VEDAI = DatasetConfig(
         "RSVDet",
         "YOLOv11-RGBT",
         "LCAFNet",
-        "SH-DETR",
+        "RSC-DETR",
     ),
     json_sources={
         "CFT": JsonSource(
@@ -153,7 +153,7 @@ VEDAI = DatasetConfig(
         "RT-DETR concat": JsonSource(
             ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json"
         ),
-        "SH-DETR": JsonSource(
+        "RSC-DETR": JsonSource(
             ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json"
         ),
     },
@@ -192,7 +192,7 @@ M3FD = DatasetConfig(
         "YOLOv11-RGBT",
         "LCAFNet",
         "CLDyN+RT-DETR",
-        "SH-DETR",
+        "RSC-DETR",
     ),
     json_sources={
         "RT-DETR RGB": JsonSource(
@@ -210,7 +210,7 @@ M3FD = DatasetConfig(
             / "compare/CLDyN_M3FD-lt20/cldyn-1/eval_m3fd_map/"
             "cldyn-vfn-rtdetr-1/val_best_test_per_class/predictions.json"
         ),
-        "SH-DETR": JsonSource(
+        "RSC-DETR": JsonSource(
             ROOT
             / "outputs/m3fd_lt20_s42_b8_valbest_test_requested/"
             "v19c_spsf/predictions.json"
@@ -521,15 +521,15 @@ def candidate_metrics(
         name: match_detections(methods.get(name, {}).get(image_id, []), ground_truth)
         for name in method_order
     }
-    shdetr_match = matches["SH-DETR"]
+    rscdetr_match = matches["RSC-DETR"]
     other_targets = {
         target_index
         for name in method_order
-        if name != "SH-DETR"
+        if name != "RSC-DETR"
         for target_index in matches[name].values()
     }
     unique_targets = tuple(
-        sorted(set(shdetr_match.values()).difference(other_targets))
+        sorted(set(rscdetr_match.values()).difference(other_targets))
     )
     display_scale = PANEL_WIDTH / record.width
     display_sizes = [
@@ -539,18 +539,18 @@ def candidate_metrics(
         )
         for index in unique_targets
     ]
-    shdetr_count = len(methods.get("SH-DETR", {}).get(image_id, []))
+    rscdetr_count = len(methods.get("RSC-DETR", {}).get(image_id, []))
     other_fp = sum(
         len(methods.get(name, {}).get(image_id, [])) - len(matches[name])
         for name in method_order
-        if name != "SH-DETR"
+        if name != "RSC-DETR"
     )
     return CandidateMetrics(
         image_id=image_id,
         file_name=record.file_name,
         gt_count=len(ground_truth),
-        shdetr_tp=len(shdetr_match),
-        shdetr_fp=shdetr_count - len(shdetr_match),
+        rscdetr_tp=len(rscdetr_match),
+        rscdetr_fp=rscdetr_count - len(rscdetr_match),
         unique_targets=unique_targets,
         visible_unique=sum(size >= VISIBLE_UNIQUE_MIN_SIDE for size in display_sizes),
         visible_size_sum=sum(display_sizes),
@@ -587,7 +587,7 @@ def print_ranking(name: str, candidates: Sequence[CandidateMetrics], limit: int 
     for index, item in enumerate(candidates[:limit], start=1):
         print(
             f"  {index:02d} id={item.image_id} file={item.file_name} "
-            f"gt={item.gt_count} shdetr_tp={item.shdetr_tp} shdetr_fp={item.shdetr_fp} "
+            f"gt={item.gt_count} rscdetr_tp={item.rscdetr_tp} rscdetr_fp={item.rscdetr_fp} "
             f"unique={len(item.unique_targets)} visible_unique={item.visible_unique} "
             f"other_fp={item.other_fp}"
         )
@@ -662,7 +662,7 @@ def select_vedai(
     if forced_image_id is not None:
         return forced_image_id, final
     if not final:
-        raise RuntimeError("No VEDAI sample retained a SH-DETR-only true positive")
+        raise RuntimeError("No VEDAI sample retained a RSC-DETR-only true positive")
     return final[0].image_id, final
 
 
@@ -677,7 +677,7 @@ def select_m3fd(
     if forced_image_id is not None:
         return forced_image_id, ranked
     if not ranked:
-        raise RuntimeError("No M3FD sample has a SH-DETR-only true positive")
+        raise RuntimeError("No M3FD sample has a RSC-DETR-only true positive")
     return ranked[0].image_id, ranked
 
 
@@ -711,12 +711,12 @@ def detection_color(
     method: str,
     detection_index: int,
     matches: Mapping[str, Mapping[int, int]],
-    shdetr_unique_targets: set[int],
+    rscdetr_unique_targets: set[int],
 ) -> tuple[int, int, int]:
     target_index = matches[method].get(detection_index)
     if target_index is None:
         return CYAN
-    if method == "SH-DETR" and target_index in shdetr_unique_targets:
+    if method == "RSC-DETR" and target_index in rscdetr_unique_targets:
         return YELLOW
     return RED
 
@@ -784,7 +784,7 @@ def draw_legend(
     canvas: Image.Image, top: int, font: ImageFont.ImageFont
 ) -> None:
     draw = ImageDraw.Draw(canvas)
-    entries = ((RED, "Correct detection"), (CYAN, "False positive"), (YELLOW, "SH-DETR-only true positive"))
+    entries = ((RED, "Correct detection"), (CYAN, "False positive"), (YELLOW, "RSC-DETR-only true positive"))
     swatch = 18
     gap = 32
     widths = []
@@ -836,10 +836,10 @@ def render(
     other_targets = {
         target_index
         for name in config.method_order
-        if name != "SH-DETR"
+        if name != "RSC-DETR"
         for target_index in matches[name].values()
     }
-    shdetr_unique_targets = set(matches["SH-DETR"].values()).difference(other_targets)
+    rscdetr_unique_targets = set(matches["RSC-DETR"].values()).difference(other_targets)
 
     panel_height = round(PANEL_WIDTH * record.height / record.width)
     canvas_width = 2 * CANVAS_MARGIN + 4 * PANEL_WIDTH + 3 * COLUMN_GAP
@@ -870,7 +870,7 @@ def render(
             range(len(methods[name])),
             key=lambda detection_index: color_priority[
                 detection_color(
-                    name, detection_index, matches, shdetr_unique_targets
+                    name, detection_index, matches, rscdetr_unique_targets
                 )
             ],
         )
@@ -888,7 +888,7 @@ def render(
             draw.rectangle(
                 display_box,
                 outline=detection_color(
-                    name, detection_index, matches, shdetr_unique_targets
+                    name, detection_index, matches, rscdetr_unique_targets
                 ),
                 width=BOX_WIDTH,
             )
@@ -918,13 +918,13 @@ def render(
     output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(output, format="PNG", optimize=True)
 
-    shdetr_matches = matches["SH-DETR"]
+    rscdetr_matches = matches["RSC-DETR"]
     print(f"wrote={output}")
     print(
         f"selection={config.name} id={image_id} file={record.file_name} "
         f"size={record.width}x{record.height} gt={len(ground_truth)} "
-        f"shdetr_tp={len(shdetr_matches)} shdetr_fp={len(methods['SH-DETR']) - len(shdetr_matches)} "
-        f"shdetr_unique={len(shdetr_unique_targets)}"
+        f"rscdetr_tp={len(rscdetr_matches)} rscdetr_fp={len(methods['RSC-DETR']) - len(rscdetr_matches)} "
+        f"rscdetr_unique={len(rscdetr_unique_targets)}"
     )
     print("order=" + " | ".join(config.method_order))
     print(
@@ -934,7 +934,7 @@ def render(
             for name in config.method_order
         )
     )
-    for target_index in sorted(shdetr_unique_targets):
+    for target_index in sorted(rscdetr_unique_targets):
         target = ground_truth[target_index]
         box = tuple(round(value, 1) for value in target.xyxy)
         print(

@@ -12,10 +12,10 @@ from PIL import Image, ImageDraw
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS  # noqa: E402
 
 
 DATA = DATASETS / "VEDAI"

@@ -23,10 +23,10 @@ from src.core import YAMLConfig, yaml_utils  # noqa: E402
 
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT  # noqa: E402
+from rscdetr_paths import ROOT  # noqa: E402
 
 
 CFG = CODE / "configs/rtdetrv2/rtdetrv2_r50vd_vedai_1024_concat_baseline_seed3407_fold03_30e.yml"

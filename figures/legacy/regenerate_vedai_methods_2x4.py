@@ -16,10 +16,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET, PAPER  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET, PAPER  # noqa: E402
 PAPER_ROOT = PAPER
 IMAGE_ID = 25
 IMAGE_KEY = "00000025_co"
@@ -35,7 +35,7 @@ METHOD_ORDER = (
     "RSVDet",
     "YOLOv11-RGBT",
     "LCAFNet",
-    "SH-DETR",
+    "RSC-DETR",
 )
 
 SCORE_THRESHOLD = 0.50
@@ -89,7 +89,7 @@ JSON_SOURCES = {
         ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json",
         0,
     ),
-    "SH-DETR": (
+    "RSC-DETR": (
         ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json",
         0,
     ),
@@ -280,7 +280,7 @@ def box_iou(left: Sequence[float], right: Sequence[float]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def shdetr_color(
+def rscdetr_color(
     detection: Detection,
     ground_truth: Iterable[Detection],
     other_methods: Iterable[Detection],
@@ -349,8 +349,8 @@ def draw_panel(
             min(PANEL_SIZE - 1, max(0, round(y2 * scale_y))),
         )
         color = (
-            shdetr_color(detection, ground_truth, other_methods)
-            if title == "SH-DETR"
+            rscdetr_color(detection, ground_truth, other_methods)
+            if title == "RSC-DETR"
             else RED
         )
         draw.rectangle(display_box, outline=color, width=BOX_WIDTH)
@@ -414,14 +414,14 @@ def main() -> None:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(args.output, format="PNG", optimize=True)
     yellow_count = sum(
-        shdetr_color(detection, ground_truth, other_methods) == YELLOW
-        for detection in methods["SH-DETR"]
+        rscdetr_color(detection, ground_truth, other_methods) == YELLOW
+        for detection in methods["RSC-DETR"]
     )
     print(f"wrote={args.output}")
     print(f"image={IMAGE_KEY} size={source.width}x{source.height}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    print(f"shdetr_yellow={yellow_count} shdetr_red={len(methods['SH-DETR']) - yellow_count}")
+    print(f"rscdetr_yellow={yellow_count} rscdetr_red={len(methods['RSC-DETR']) - yellow_count}")
 
 
 if __name__ == "__main__":

@@ -4,8 +4,8 @@
 Each method panel is CROPPED to a square window around the scene's three ground
 truth targets (tractor + two pickups) instead of showing the whole 1024x1024
 image, so the targets are large and legible. Detection boxes are mapped from
-image to crop coordinates. The SH-DETR-only tractor target keeps its yellow box
-(only SH-DETR matches it above threshold); RSVDet is loaded from its full
+image to crop coordinates. The RSC-DETR-only tractor target keeps its yellow box
+(only RSC-DETR matches it above threshold); RSVDet is loaded from its full
 test-set predictions file so its two high-confidence pickup detections appear
 (a previous render had an empty RSVDet panel).
 """
@@ -25,10 +25,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
+from rscdetr_paths import ROOT, DATASETS, CFT, LCAFNET  # noqa: E402
 
 
 IMAGE_ID = 1033
@@ -36,7 +36,7 @@ IMAGE_KEY = "00001033_co"
 IMAGE_PATH = DATASETS / "VEDAI/Vehicules1024/00001033_co.png"
 IR_IMAGE_PATH = DATASETS / "VEDAI/Vehicules1024/00001033_ir.png"
 GT_PATH = DATASETS / "VEDAI/annotations/vedai_fold01_test_class8.json"
-OUTPUT_PATH = ROOT / "SH_DETR/figures/qualitative_vedai_rgb_ir_1033_2x4.png"
+OUTPUT_PATH = ROOT / "RSC_DETR/figures/qualitative_vedai_rgb_ir_1033_2x4.png"
 RSVDET_JSON = ROOT / "outputs/compare_vedai_icafusion_rsvdet/rsvdet/eval_best/predictions.json"
 
 # Crop window (image coords): a square covering tractor (377,734,425,778) and the
@@ -52,7 +52,7 @@ METHOD_ORDER = (
     "RSVDet",
     "YOLOv11-RGBT",
     "LCAFNet",
-    "SH-DETR",
+    "RSC-DETR",
 )
 
 SCORE_THRESHOLD = 0.70
@@ -99,7 +99,7 @@ JSON_SOURCES = {
         ROOT / "outputs/vedai_direct_test_unified/baseline/seed_3407/predictions.json",
         0,
     ),
-    "SH-DETR": (
+    "RSC-DETR": (
         ROOT / "outputs/vedai_s3407_requested_perclass/v19c_spsf/predictions.json",
         0,
     ),
@@ -280,7 +280,7 @@ def box_iou(left: Sequence[float], right: Sequence[float]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def shdetr_color(
+def rscdetr_color(
     detection: Detection,
     ground_truth: Iterable[Detection],
     other_methods: Iterable[Detection],
@@ -361,8 +361,8 @@ def main() -> None:
     font_title = load_font(24)
     font_label = load_font(20)
 
-    def color_for_shdetr(detection: Detection) -> tuple[int, int, int]:
-        return shdetr_color(detection, ground_truth, other_methods)
+    def color_for_rscdetr(detection: Detection) -> tuple[int, int, int]:
+        return rscdetr_color(detection, ground_truth, other_methods)
 
     def color_red(_: Detection) -> tuple[int, int, int]:
         return RED
@@ -371,7 +371,7 @@ def main() -> None:
         row, column = divmod(index, 4)
         panel_left = CANVAS_MARGIN + column * (MODALITY_SIZE + COLUMN_GAP)
         image_top = CANVAS_MARGIN + row * (panel_height + ROW_GAP)
-        color_for = color_for_shdetr if name == "SH-DETR" else color_red
+        color_for = color_for_rscdetr if name == "RSC-DETR" else color_red
 
         # RGB thumbnail (cropped window)
         rgb_panel = source.crop(CROP).resize(
@@ -395,10 +395,10 @@ def main() -> None:
         title_y = image_top + TITLE_BAND - TITLE_GAP - (text_box[3] - text_box[1]) - text_box[1]
         canvas_draw.text((title_x, title_y), name, fill=TEXT, font=font_title)
 
-    # legend: red = detection, yellow = SH-DETR-only true positive (centered)
+    # legend: red = detection, yellow = RSC-DETR-only true positive (centered)
     canvas_draw = ImageDraw.Draw(canvas)
     legend_top = canvas_height - LEGEND_BAND + 16
-    entries = ((RED, "Detection"), (YELLOW, "SH-DETR-only true positive"))
+    entries = ((RED, "Detection"), (YELLOW, "RSC-DETR-only true positive"))
     gap = 40
     widths = []
     for _, label in entries:
@@ -420,8 +420,8 @@ def main() -> None:
     print(f"canvas={canvas_width}x{canvas_height} crop={CROP} thr={SCORE_THRESHOLD}")
     print("order=" + " | ".join(METHOD_ORDER))
     print("counts=" + ", ".join(f"{name}:{len(methods[name])}" for name in METHOD_ORDER))
-    yellow = [d for d in methods["SH-DETR"] if color_for_shdetr(d) == YELLOW]
-    print(f"shdetr_unique(yellow)={len(yellow)}")
+    yellow = [d for d in methods["RSC-DETR"] if color_for_rscdetr(d) == YELLOW]
+    print(f"rscdetr_unique(yellow)={len(yellow)}")
     for d in yellow:
         print(f"  yellow xyxy={tuple(round(v,1) for v in d.xyxy)} cat={d.category_id} score={d.score:.3f}")
 

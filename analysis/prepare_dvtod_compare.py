@@ -3,7 +3,7 @@
 """Build the unified DVTOD 3-class RGB/IR data roots used by the four
 comparison baselines (C2DFF-Net, CMFADet, SFFR, C2Former).
 
-Protocol (mirrors the "common-size" step of the SH-DETR C2 dual-stream setup):
+Protocol (mirrors the "common-size" step of the RSC-DETR C2 dual-stream setup):
   * RGB  : datasets/DVTOD dataset/vis1/images/{train,val}   (1920x1080, untouched)
   * IR   : datasets/DVTOD dataset/ir1/images/{train,val}    (640x512)
            resized to 1920x1080 so that both streams share one spatial size.
@@ -33,10 +33,10 @@ import cv2
 import sys
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT  # noqa: E402
+from rscdetr_paths import ROOT  # noqa: E402
 
 
 DATASET = ROOT / "datasets/DVTOD dataset"

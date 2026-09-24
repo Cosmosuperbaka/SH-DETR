@@ -29,10 +29,10 @@ import torch
 
 
 for _parent in Path(__file__).resolve().parents:
-    if (_parent / "shdetr_paths.py").is_file():
+    if (_parent / "rscdetr_paths.py").is_file():
         sys.path.insert(0, str(_parent))
         break
-from shdetr_paths import ROOT  # noqa: E402
+from rscdetr_paths import ROOT  # noqa: E402
 
 
 def human(n):
@@ -149,7 +149,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--method", required=True,
                     choices=["c2dff", "cmfadet", "sffr", "darfnet",
-                             "c2former", "shdetr", "concat"])
+                             "c2former", "rscdetr", "concat"])
     ap.add_argument("--weights", default="")
     ap.add_argument("--imgsz", type=int, default=1920)
     ap.add_argument("--config", default="")

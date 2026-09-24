@@ -76,7 +76,7 @@ def main():
     all_rows=[]
     for dataset,(gtp,bp,sp) in CASES.items():
         gt=load_gt(gtp)
-        for name,p in (("RT-DETR concat",bp),("SH-DETR",sp)):
+        for name,p in (("RT-DETR concat",bp),("RSC-DETR",sp)):
             c,total=classify(gt,load_pred(p)); c["Correct"] = c["Correct"]
             all_rows.append((dataset,name,c,total))
     cats=["Correct","Localization error","Classification error","Missed","False positive"]

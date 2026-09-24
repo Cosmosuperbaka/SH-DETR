@@ -1,11 +1,11 @@
-# SH-DETR
+# RSC-DETR
 
 Reference code for the paper
 
 > **Symmetric Fusion and Reliability-Aware Supervision for Long-Tailed RGB–IR
 > Remote-Sensing Detection**
 
-SH-DETR is a dual-stream RGB–IR detector for aerial remote sensing. It keeps the
+RSC-DETR is a dual-stream RGB–IR detector for aerial remote sensing. It keeps the
 RT-DETR inference pathway unchanged and adds three training-side components plus
 a harmonizer that coordinates them.
 
@@ -40,7 +40,7 @@ weights — those live on the experiment server (see
 [docs/PATHS.md](docs/PATHS.md)).
 
 ```
-SH-DETR/
+RSC-DETR/
 ├── figures/
 │   ├── render_vedai_qualitative.py     # Fig. 7  (VEDAI qualitative comparison)
 │   ├── render_m3fd_qualitative.py      # Fig. 8  (M3FD-LT20 qualitative comparison)
@@ -73,7 +73,7 @@ All three figures share one visual language:
 * one panel per method, **visible (RGB) on top and infrared (IR) below**;
 * **red** = correct detection, **blue** = false detection,
   **green dashed** = ground truth,
-  **yellow** = a true positive recovered only by SH-DETR;
+  **yellow** = a true positive recovered only by RSC-DETR;
 * every geometry constant is multiplied by `SCALE = 2`, so the exported PNG
   carries roughly twice the pixels of the earlier 240 px / 330 px / 400 px
   thumbnails and stays crisp at `\textwidth` in print.
@@ -107,32 +107,32 @@ when they have to run inference instead of reading cached predictions.
 
 Nothing in this repository downloads data automatically, and **no experiment
 path is hard-coded**. Every location is resolved at import time by
-[`shdetr_paths.py`](shdetr_paths.py), which reads environment variables and
+[`rscdetr_paths.py`](rscdetr_paths.py), which reads environment variables and
 falls back to defaults derived from the current user's home directory:
 
 | Variable | Meaning | Default |
 |---|---|---|
-| `SHDETR_WORKSPACE` | Root holding all experiment trees | `~` |
-| `SHDETR_ROOT` | Main SH-DETR working repository | `$SHDETR_WORKSPACE/sh-detr` |
-| `SHDETR_DATASETS` | Dataset root containing `VEDAI/`, `M3FD/` | `$SHDETR_WORKSPACE/vedai_data/datasets` |
-| `SHDETR_CFT` | CFT comparison checkout | `$SHDETR_WORKSPACE/CFT` |
-| `SHDETR_LCAFNET` | LCAFNet comparison checkout | `$SHDETR_WORKSPACE/LCAFNet` |
-| `SHDETR_MSOD` | Multispectral-object-detection checkout | `$SHDETR_WORKSPACE/multispectral-object-detection` |
-| `SHDETR_PAPER` | Unpacked paper sources (figure target) | `$SHDETR_ROOT/SH_DETR` |
-| `SHDETR_OUT_QUAL` | Qualitative-figure output root | `$SHDETR_ROOT/out_qual` |
+| `RSCDETR_WORKSPACE` | Root holding all experiment trees | `~` |
+| `RSCDETR_ROOT` | Main RSC-DETR working repository | `$RSCDETR_WORKSPACE/rsc-detr` |
+| `RSCDETR_DATASETS` | Dataset root containing `VEDAI/`, `M3FD/` | `$RSCDETR_WORKSPACE/vedai_data/datasets` |
+| `RSCDETR_CFT` | CFT comparison checkout | `$RSCDETR_WORKSPACE/CFT` |
+| `RSCDETR_LCAFNET` | LCAFNet comparison checkout | `$RSCDETR_WORKSPACE/LCAFNet` |
+| `RSCDETR_MSOD` | Multispectral-object-detection checkout | `$RSCDETR_WORKSPACE/multispectral-object-detection` |
+| `RSCDETR_PAPER` | Unpacked paper sources (figure target) | `$RSCDETR_ROOT/RSC_DETR` |
+| `RSCDETR_OUT_QUAL` | Qualitative-figure output root | `$RSCDETR_ROOT/out_qual` |
 
 Print the resolved values before running anything, and export the ones your
 machine needs:
 
 ```bash
-python3 shdetr_paths.py                 # show every resolved path
-export SHDETR_ROOT=/data/shd/detr       # override a single location
-export SHDETR_WORKSPACE=/mnt/experiments
+python3 rscdetr_paths.py                 # show every resolved path
+export RSCDETR_ROOT=/data/shd/detr       # override a single location
+export RSCDETR_WORKSPACE=/mnt/experiments
 ```
 
 Inside the repository the experiment trees are referenced as
 `ROOT/datasets/` (DVTOD, RTDOD), `ROOT/compare/` (comparison methods),
-`ROOT/outputs/` (SH-DETR / RT-DETR predictions) and `ROOT/result/`
+`ROOT/outputs/` (RSC-DETR / RT-DETR predictions) and `ROOT/result/`
 (RTDOD predictions). Scripts are portable as long as these trees exist
 somewhere and the variables point at them.
 
@@ -161,7 +161,7 @@ predictions) and a **same-class IoU threshold of 0.50**.
 * The qualitative panels are selected illustrative scenes, not dataset-level
   recall measurements. The scripts import cached `predictions.json` /
   YOLO `labels/*.txt` outputs; re-running inference may change individual scores.
-* Panels that draw a yellow box re-derive "recovered only by SH-DETR" by matching
+* Panels that draw a yellow box re-derive "recovered only by RSC-DETR" by matching
   detections to ground truth at IoU ≥ 0.50 and checking whether any other method
   matches the same target.
 * Class-index conventions differ between the RT-DETR family (1-based COCO ids)
@@ -170,7 +170,7 @@ predictions) and a **same-class IoU threshold of 0.50**.
 ## Citation
 
 ```bibtex
-@article{chen2026shdetr,
+@article{chen2026rscdetr,
   title   = {Symmetric Fusion and Reliability-Aware Supervision
              for Long-Tailed {RGB--IR} Remote-Sensing Detection},
   author  = {Chen, Yi and Deng, Lingjun and Zhong, Chuen-Ho and Liu, Chang and Dong, Yanni},

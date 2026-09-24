@@ -27,7 +27,7 @@ def make_gain_plot():
         order = np.argsort(gains); labels = [labels[i] for i in order]; gains = gains[order]
         y = np.arange(len(labels)); colors = ["#d95f02" if x < 0 else "#1b9e77" for x in gains]
         ax.barh(y, gains, color=colors, alpha=.9); ax.axvline(0, color="black", lw=.8)
-        ax.set_yticks(y, labels); ax.set_xlabel("SH-DETR − concat AP (percentage points)"); ax.set_title(name); ax.grid(axis="x", alpha=.25)
+        ax.set_yticks(y, labels); ax.set_xlabel("RSC-DETR − concat AP (percentage points)"); ax.set_title(name); ax.grid(axis="x", alpha=.25)
         for yi, value in zip(y, gains):
             ax.text(value + (0.15 if value >= 0 else -0.15), yi, f"{value:+.2f}", va="center", ha="left" if value >= 0 else "right", fontsize=8)
         xmin, xmax = ax.get_xlim()
@@ -51,14 +51,14 @@ def make_curve_plot():
     }
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), constrained_layout=True); plotted = []
     for ax, (name, (base_p, sh_p)) in zip(axes, datasets.items()):
-        for path, label, color in ((base_p, "RT-DETR concat", "#7570b3"), (sh_p, "SH-DETR", "#1b9e77")):
+        for path, label, color in ((base_p, "RT-DETR concat", "#7570b3"), (sh_p, "RSC-DETR", "#1b9e77")):
             if not path.exists(): continue
             rows = read_curve(path)
             if not rows: continue
             ep, ap, ap75 = zip(*rows); ax.plot(ep, ap, marker="o", ms=2.5, label=f"{label} AP", color=color); ax.plot(ep, ap75, ls="--", marker=".", ms=2, label=f"{label} AP75", color=color, alpha=.65); plotted.append((name, label, len(rows)))
         ax.set_title(name); ax.set_xlabel("Epoch"); ax.set_ylabel("Validation metric (%)"); ax.grid(alpha=.25); ax.legend(fontsize=8)
     fig.savefig(OUT / "fig_training_curve_ap_ap75_candidate.png", dpi=300); fig.savefig(OUT / "fig_training_curve_ap_ap75_candidate.pdf"); plt.close(fig)
-    (OUT / "README.md").write_text("# Paper analysis candidates\n\n- `fig_class_ap_gain_vs_concat`: existing per-class AP, SH-DETR minus concat.\n- `fig_training_curve_ap_ap75_candidate`: descriptive validation curves only; a matched no-dynamic-coordination ablation is not available.\n\nPlotted curves: " + repr(plotted) + "\n", encoding="utf-8")
+    (OUT / "README.md").write_text("# Paper analysis candidates\n\n- `fig_class_ap_gain_vs_concat`: existing per-class AP, RSC-DETR minus concat.\n- `fig_training_curve_ap_ap75_candidate`: descriptive validation curves only; a matched no-dynamic-coordination ablation is not available.\n\nPlotted curves: " + repr(plotted) + "\n", encoding="utf-8")
 
 if __name__ == "__main__":
     make_gain_plot(); make_curve_plot(); print(OUT)
