@@ -77,6 +77,20 @@ DASH_GAP = 7 * SCALE
 
 FONT_DIR = Path("/usr/share/fonts/opentype/urw-base35")
 
+# VEDAI 8-class label set (vedai_fold01_test_class8.json)
+CLASS_NAMES = {
+    1: "Car",
+    2: "Truck",
+    3: "Pickup",
+    4: "Tractor",
+    5: "Camping car",
+    6: "Boat",
+    7: "Van",
+    8: "Other",
+}
+LABEL_FONT_SIZE = 20 * SCALE
+MAX_LABELS_PER_PANEL = 3
+
 
 @dataclass(frozen=True)
 class Detection:
@@ -297,12 +311,55 @@ def draw_gt(draw: ImageDraw.ImageDraw, ground_truth: Sequence[Detection]) -> Non
         draw_dashed_rect(draw, to_display(target.xyxy), GREEN, GT_BOX_WIDTH, DASH, DASH_GAP)
 
 
-def draw_detections(draw: ImageDraw.ImageDraw, detections, color_for) -> None:
+def draw_detections(draw: ImageDraw.ImageDraw, detections, color_for, label_font) -> None:
+    rendered = []
     for detection in detections:
         display_box = to_display(detection.xyxy)
         if display_box[2] - display_box[0] < 2 or display_box[3] - display_box[1] < 2:
             continue
-        draw.rectangle(display_box, outline=color_for(detection), width=BOX_WIDTH)
+        color = color_for(detection)
+        draw.rectangle(display_box, outline=color, width=BOX_WIDTH)
+        rendered.append((display_box, detection, color))
+
+    # Annotate only the most informative boxes so crowded panels stay readable;
+    # every detection box itself is always drawn.
+    priority = {YELLOW: 0, RED: 1}
+    selected = sorted(
+        rendered, key=lambda item: (priority.get(item[2], 2), -item[1].score)
+    )[:MAX_LABELS_PER_PANEL]
+    occupied = []
+    for display_box, detection, color in selected:
+        name = CLASS_NAMES.get(detection.category_id, f"class-{detection.category_id}")
+        label = f"{name} {detection.score:.2f}"
+        tb = draw.textbbox((0, 0), label, font=label_font)
+        text_w, text_h = tb[2] - tb[0], tb[3] - tb[1]
+        x1, y1, x2, y2 = display_box
+        candidates = [
+            (x1, y1 - text_h - 5 * SCALE),
+            (x1, y2 + 4 * SCALE),
+            (x2 + 4 * SCALE, y1),
+            (x1 - text_w - 4 * SCALE, y1),
+        ]
+        chosen = None
+        for x, y in candidates:
+            x = min(max(2, x), max(2, MODALITY_SIZE - text_w - 3))
+            y = min(max(2, y), max(2, MODALITY_SIZE - text_h - 3))
+            rect = (x - 1, y - 1, x + text_w + 2, y + text_h + 2)
+            overlaps = any(
+                not (rect[2] <= old[0] or old[2] <= rect[0]
+                     or rect[3] <= old[1] or old[3] <= rect[1])
+                for old in occupied
+            )
+            if not overlaps:
+                chosen = (x, y, rect)
+                break
+        if chosen is None:
+            continue
+        label_x, label_y, rect = chosen
+        draw.rectangle(rect, fill=color, outline=color, width=1)
+        draw.text((label_x - tb[0], label_y - tb[1]), label,
+                  fill=(TEXT if color == YELLOW else WHITE), font=label_font)
+        occupied.append(rect)
 
 
 def main() -> None:
@@ -347,7 +404,7 @@ def main() -> None:
             panel = src.crop(CROP).resize((MODALITY_SIZE, MODALITY_SIZE), Image.LANCZOS)
             draw = ImageDraw.Draw(panel)
             draw_gt(draw, ground_truth)
-            draw_detections(draw, methods[name], color_for)
+            draw_detections(draw, methods[name], color_for, font_label)
             canvas.paste(panel, (panel_left, image_top + offset))
 
         canvas_draw = ImageDraw.Draw(canvas)
